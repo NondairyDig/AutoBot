@@ -1,0 +1,21 @@
+{{- range .Values.microservices }}
+{{- if not .image }}
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  annotations:
+	meta.helm.sh/release-namespace: {{ $.Values.namespace }}
+	meta.helm.sh/release-name: {{ $.Chart.Name }}
+	app.openshift.io/vcs-ref: '{{ .branch }}'
+	app.openshift.io/vcs-uri: '{{ $.Values.gitRepo }}/{{ .name }}'
+  labels:
+	app: {{ .name }}
+	app.kubernetes.io/component: {{ .name }}
+	app.kubernetes.io/instance: {{ .name }}
+	app.kubernetes.io/name: {{ .name }}
+	app.kubernetes.io/part-of: {{ $.Values.appname }}
+	app.kubernetes.io/managed-by: Helm
+  name: {{ .name }}
+  namespace: {{ $.Values.namespace }}
+{{- end }}
+{{- end }}

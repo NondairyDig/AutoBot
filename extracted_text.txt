@@ -1,0 +1,1800 @@
+
+{@e$chart. yam
+apiversion: vz
+name: hurricane-home
+description: A Helm chart for Hurricane Hone
+type: application
+version: 8.1.8
+appVersion: "1.0"
+1@e$build-config.yaml
+{{- range .Values.microservices }}
+{4- if image }}
+{{- else }}
+kind: Buildconfig
+apiversion: build.openshift.io/va
+metadata: I
+name: {{ -name ¥}
+namespace: {{ $.Values.namespace }}
+annotations:
+neta.helm.sh/release-namespace: {{ $.Values.namespace }}
+meta.helm.sh/release-name: {{ $.Chart-Name }}
+app. openshift.io/ves-ref: “{{ -branch }}*
+4{- if .git})
+app.openshift.io/vcs-urd: “{{ -eit-url }}"
+if- else}}
+app-openshift.fo/ves-uri: "{{ $.Values.gitRepo }}/{{ .name }}"
+({- end}
+labels:
+app: {{ .name }}
+app-kubernetes.io/component: {{ .name }}
+app-kubernetes.io/instance: {{ -nane }}
+app.kubernetes.io/name: {{ .name }}
+app.kubernetes.io/part-of: {{ $.Values.appname }}
+app.kubernetes.io/managed-by: Helm
+spect
+nodeSelector: null
+output:
+
+lr iene an a ae
+spect
+nodeSelector: ruil
+output:
+to:
+kind: ImageStreantag
+name: ‘{{ .name }}:latest’
+resources:
+Limits:
+cpu: 2
+senory: 16
+requests:
+cpu: 50a
+memory: 500M
+successfulBuildsHistoryLinit: 5
+failedeuildsHistorylinit: 5
+strategy:
+type: Docker
+dockerStrategy:
+U- if .dockerfile }}
+dockerfilePath: {{ .dockerfile.path }}
+4{- else}}
+dockerfilePath: Dackerfile
+Af- end}}
+postCommit: {}
+source:
+type: Git
+git:
+4 if sith}
+uri: “{{ .git-url }}*
+ref: {{ branch }}
+{{- else}}
+uri: '{{ $.Values.gitRepo }}/{{ -name }}°
+ref: {{ .branch }} I
+{- end}}
+ref: {{ .branch }}
+contextDir: /
+sourceSecret;
+name: git-hurriadmin
+runPolicy: Serial
+triggers:
+- type: “Configchange”
+{{- end }}
+{{- end }}
+H@rSconFig-map.yanl
+{{- range .Values.configmaps }}
+apiversion: vi
+kind: Configmap
+metadata:
+name: {{ .name }}
+namespace: {{ $.Values.namespace }}
+eee eee
+
+nae Ne eee
+metadata:
+name: {{ .name }}
+namespace: {{ $.Values.nanespace }}
+{{- 2£ .path }}
+data:
+{{ .name 3}: |-
+{{ $.Files.Get .file | indent 4}}
+{{- else }}
+data: {{ .data | toYami | nindent 2}}
+{- end
+U- end }}
+S@xsdeployment .yan]
+{{- range .Values.microservices }}
+apiversion: apps/vi
+kind: Deployment
+metadata:
+annotations:
+Amage.openshift to/triggers: ‘[{"from”:{"kind”:"InageStreamTag”,"name":"{{ .nane }}:latest”,"namespace” :"{{.Values.namespace})"},"fleldPath":"spec. template. spec.containers[?(@.name=-\"{{ .name }}\")].4mage”,
+“pause” :“False”}]"
+app.openshift.io/ves-ref: {{ .branch }}
+({- if -githy
+app.openshift.io/ves-uri: "{{ .git-url }}"
+{{- else}}
+app.openshift.io/ves-uri: “{{ $.Values.gitRepo }}/{{ -name }}'
+{{- end}}
+meta.heln.sh/release-namespace: {{ $-Values.namespace }}
+meta.helm.sh/release-name: {{ $-Chart.Name }}
+name: {{ -nane }+
+namespace: {{ $.Values.namespace }}
+labels: I
+app: {{ .name }}
+app-kubernetes.io/nane: {{ .name }}
+app.kubernetes.io/component: {{ .name }}
+app.kubernetes-io/instance: {{ .name }}
+app.kubernetes.fo/part-of: {{ $.Values.appname }}
+app-kubernetes.io/managed-by: Hela
+spec:
+revisionHistoryLimit: 3
+progressDeadlineSeconds: 688
+replicas: {{- if .replicas }}
+{{ replicas }}
+{{- else }}
+{{ $.Values.replicaCount }}
+{{- end}}
+selector:
+satchLabels:
+app: {{ .name }}
+strategy:
+rollingupdate:
+maxSurge: 25%
+eee ia_nae. new
+
+Sree ye
+strategy:
+rolLingUpdate:
+axsurge: 25%
+maxUnavailable: 25%
+type: Rollingupdate
+template:
+metadata:
+labels:
+app: {{ -nane }}
+deploymentconfig: {{ -nane }}
+spec:
+containers:
+~ name: {{ -nane }}
+{{- if .image }}
+image: “{{ $.Values.image.repository }}{{ -image }}”
+U- else }}
+image: "{{ $.Values.image.repository }}{{ .name }}:{{ $-Values image.tag | default $.chart.AppVersion }}"
+(> end 3}
+{{- 4 .command }}
+command: {{ .command | toYaml | nindent 10 }}
+{{- else }}
+{{- end 3}
+imagePullPolicy: {{ $.Values.image.pullPolicy }}
+eesources: {{- if .resources }}
+{{ -resources | toYaml | nindent 1 }}
+{{- else }}
+4 $.Values.resources | toYaml | nindent 1¢ ¥}
+{{- end}}
+env: {{ $-Values.envvars | to¥anl | nindent 16 }}
+envFrom: {{ $.Values.envframvars | toYaml | nindent 16 }}
+{{- if .mountContighaps }}
+{{- range $.Values.configmaps }}
+{> af .path }} I
+volumeMounts :
+= mountPath: {{ path }}
+rane: {{ .name }}
+volumes;
+= name: {{ .name }}
+confighap:
+name: {{ .nane }}
+i{- else }}
+{{- end 3}
+{{- end 3}
+{{- else }}
+{{- end }}
+dnsPolicy: ClusterFirst
+restartPolicy: Always
+schedulerName: default-scheduler
+securityContext: {}
+terminationGracePeriodSeconds: 38
+{{- end }}
+ee fo ck
+
+U{- end }}
+I@#$image-stream.yaml
+{{- range .Values.microservices }}
+{{- if -image }}
+{{- else }}
+apiversion: image.openshift-io/v1
+kind: ImageStream
+metadata:
+annotations:
+meta.heim.sh/release-namespace: {{ $.Values.namespace }}
+meta.helm.sh/release-nane: {{ $.Chart.Name }}
+app.openshift.to/ves-ref: ‘{{ -branch }}*
+{{- if -gith}
+app.openshift.io/vcs-uri: "{{ -git.url }}"
+U- else}}
+app.openshift.io/ves-uri: ‘{{ $.Values.gitRepo }}/{{ .name }}°
+{{- end}}
+labels:
+app: {{ .name }}
+app.kubernetes.ia/component: {{ -name }}
+app.kubernetes.io/instance: {{ -name }}
+app.kubernetes.ia/name: {{ .name }}
+app-kubernetes-io/part-of: {{ $-Values-appname }}
+app. kubernetes.io/managed-by: Helm
+nane: {{ .name }}
+namespace: {{ $.Values.namespace }}
+{{- end }}
+{{- end }}
+I@eg$ingress yoni I
+apiversion: networking.k8s-lo/vi
+kind: Ingress
+metadata:
+annotations;
+meta-heln.sh/release-nanespace: {{ $-Values.nanespace }}
+meta.helm.sh/release-name: {{ $.Chart.Name }}
+jabels:
+app: {{ $.Values.appnane }}
+app-kubernetes.io/conponent: {{ $.Values-appnane }}
+app-kubernetes.io/instance: {{ $.Values.appname }}
+app.kubernetes.io/name: {{ $.Values.appnane }}
+app.kubernetes. io/part-of: {{ $-Values.appname }}
+app-kubernates .1o/managed-by: Helm
+name: {{ $.Values.appname }}
+namespace: {{ .Values.namespace }}
+spect
+4{- if $.Values.ingress.tls }}
+tls:
+- hosts: {{ $.Values.ingress.hostnanes | toYanl | nindent 6 }}
+secretWame: {{ $.Values.ingress.tlsSecret }}
+
+OE EE ESE
+tis:
+- hosts: {{ $.Values. ingress hostnames | toYaml | nindent 6 }}
+secretNane: {{ $.Values.ingress.tlsSecret }}
+U- end }}
+rules:
+~ host: {{ .Values.hostname }}
+http:
+paths:
+{{- range $.Values.microservices }}
+{{- if and (ne .ingress.path “/") (ne .ingress.path “none") }}
+- path: {{ .4ngress.path }}
+pathType: Prefix
+backend:
+service:
+name: {{ .name }}
+port:
+nupber: {{ .service.port }}
+{{- end }}
+{{- end }}
+{{- range $.Values.extendedPaths }}
+{{- if and (ne .path "/") (ne .path “none") }}
+~ path: {{ «path }}
+pathType: Prefix
+backend:
+service:
+name: {{ .service.name }}
+port:
+number: {{ .service.port }}
+U{- end }}
+{{- end }}
+{{- range $.Values.microservices }}
+{{- 1f eq .ingress.path "/* }}
+~ path: {{ .ingress.path }} I
+pathType: Prefix
+backend:
+service:
+nane: {{ -nane }}
+port:
+number: {{ .service.port }}
+{{- end }}
+{{- end 3}
+l@t$secret. yar]
+{{- range .Values.secrets }}
+apiversion: v1
+kind: Secret
+metadata:
+name: {{ .name }}
+namespace: {{ $-Values.nanespace }}
+data: {{ .data | toYaml | nindent 2 }}
+type: {{ .type }}
+
+eee LR te ee
+namespace: {{ $-Values.nanespace }}
+data: {{ .data | to¥aml | nindent 2 }}
+type: {{ -type }}
+4{- end }}
+te$service.yaml
+{{- range .Values.microservices }}
+apiversion: vi
+kind: Service
+metadata:
+name: {{ .name }}
+namespace: {{ $.Values.nanespace }}
+annotations:
+app-openshift.io/ves-ref: {{ .branch }}
+4{- if -gith
+app.openshift.io/ves-uri: "{{ -git-url }}"
+{{- else}}
+app.openshift.io/vcs-uri: "{{ $-Values.gitRepo }}/{{ .name }}"
+{{- end}}
+meta.helm.sh/release-namespace: {{ $.Values.namespace }}
+meta.helm.sh/release-name: {{ $-Chart.Name }}
+labels:
+app: {{ -name }}
+app.kubernetes.io/component: {{ -name }}
+app.kubernetes.io/instance: {{ .nane }}
+app.kubernetes-io/part-of: {{ $-Values.appname }}
+app.kubernetes.io/name: {{ -nane }}
+app.kubernetes. io/managed-by: Hela
+spec:
+type: {{ $-Values.service.type }}
+ports: I
+- name: {{ .service.targetPort }}-tcp
+port: {{ .service.port }}
+targetPort: {{ .service.targetPort }}
+protocol: TCP
+selector:
+app: {{ .nane })
+deploymentconfig: {{ .nane }}
+{{- end J}
+1@s$__init__.py
+I@eGautomations.py
+fron fastapi import APIRouter, Request, WebSocket
+from ..src.Alert import Alert
+from .kafka import shortcuts ss kafka_autonations
+from .nifi import shortcuts as nifi_automations
+fron .mq import shortcuts as mq_automations
+from ..utils.task manager import task_nanager
+fron typing import Dict, Any
+
+eee I me
+from .nq import shortcuts as mq_autonations
+trom ..utils.task_manager import task manager
+from typing import Dict, Any
+router = APIRouter(prefixe”/automations”)
+router. include_router(kafka_automations. router)
+router. include_router(nifi_autonations.router)
+router. include_router(#q_automations router)
+http: //127.0.0.1:8006/auto/Fix/?application-${_ data. fields.application}&node_name=${__data. fields node_nane}Enetwork=${ data. fields .network}€object=${_data. fields object }Roperator=${_data. fields operator}&
+message-${_data, fields .message}&tine_created-${_data. fields. time created}&severity-${ data. fields. severity}atoshou-${ data. fields.toShow}ahistory_id-§{ _data.Fields history 1d}
+@router.get("/automation_arguments”, tags-[“Autorations”])
+async def get_task_arguments(task_name: str):
+return await task_nanager.get_args(task_name)
+@router.get("/list”, tags=["Automations™])
+async def get_tasks():
+return await task_manager.1ist_automations()
+@router.post(“/schedule", tags-["Automations”])
+async def schedule_automation(task_nane: str, task_args: Oict[str, Any]):
+task = await task_manager.schedule_task(task_name, **task_ergs)
+ceturn #*Task {task_name} scheduled with 5D: {task.id}"
+@router.post("/eun”, tags=["Automations”])
+async def run_automation(task_nase: str, task_args: Dict[str, Any]):
+return await task_manager.run_task(task_name, **task_args) I
+@router.get("/Fix", tags-[“Automations”]}
+async def auto_fix(request: Request):
+alert = Alert()
+await alert.parse(request .query params)
+return await alert.automation_picker()
+@router.get(“/status")
+async def get_auto_status(automation id: str):
+return await task_manager.get_task_status(autonation_id)
+@router websocket(“/track”)
+async def track_automation(websocket: WebSocket, task_id):
+await websocket.accept()
+return await task_manager.live_track_task(websocket, task id)
+!@#$general.py
+
+ee eee NE
+return await task_nanager.live_track_task(websocket, task_id)
+1ge$general py
+from fastapi import APIRouter
+from ..sec.SepviceWOW import create_incident, Incident, get_incident
+from ..src.Archive import Archive
+from ..src.Alert import AlertScanner
+router = APIRouter(prefixe"/general”, tags=["Etc™])
+@router.get("/get_incident”)
+async def get_incident_endpoint(incident_number: str):
+return get_incident(incident_number)
+@router.post(”/create_incident”)
+async def create_incident_endpoint(incident: Incident):
+return create_incident(incident)
+@router.get("/search_responsible_group")
+async def search_group_by_object(search: str):
+return avait Archive.get_responsible_team(await Archive.search(search, “Hurricane”, True))
+I@esstatistics. py
+from fastapi import APIRouter, HTTPException
+from ..sec.Host import Host
+from .nifi import statistics as nifi_stats
+from ..config import ASYNC_CELERY_TASKS 0B, HURRICANE_SRE_LEGS
+from ..src.ServiceNow import create incident, Incident
+from ..src.Archive import Archivelncident
+I
+router = APIRouter(tags-["Statistics”], prefix-"/stats”)
+router. include_router (nifi_stats.router)
+@router.get(“/test_inc", include_in_schema=False)
+asyne def test_inc():
+inc = Incident(incident_titles"TEST", incident_description="TEST", incident_vip_address="TEST", incident_usernane="hurriadmingd36@.dom", technology="nq", dest_group="Hurricane", tequila-False)
+return create incident (inc)
+@router.get("/host")
+async def stats(hostname: str):
+g = Host(hostnane-hostname)
+B-_connect(“opsadmin", "VFuk<ehig56")
+return {
+“cpu”: g.get_cpu_usage(),
+“men”: g.get_memory_usage(),
+“poot": g.get_root_usage(),
+"disks": g-get_all_disks_usage(),
+wee, eae
+
+ee eee
+"mew": g.get_memory_usage(),
+“root”: g.get_root_usage(),
+"disks": g.get_oll_disks usage(),
+io": g.get_io()
+}
+@router.get("/Flags”)
+async def get_flags():
+return list(await ASYNC_CELERY_TASKS_DB.flags.find({}, {"_id": @}).to_list(Llength-None))
+Grouter.get("/flag™)
+async def get_flag(flag: str):
+return await ASYNC_CELERY_TASKS DB.flags.find_one({"name": flag}, {"_id": @})
+router. post("/flag")
+async def set_flag(flag: str, value: str):
+await ASYNC_CELERY_TASKS_DB.flags.update_one({"name": flag}, {"$set": {"value": value}})
+return {"flag": flag, "value": value}
+Grouter.delete(“/flag”)
+async def delete flag(Flag: str):
+await ASYNC_CELERY_TASKS_DB.flags.delete_one({"name": flag})
+return {"deleted": flag}
+@router get (“/sre")
+async def get_sre_stats():
+status = await get_flag(“SRE_LEG")
+return {"leg”: status(“value"]} I
+@router.put ("/change_sre_leg")
+async def switch_sre_leg():
+current = await get_sre_stats()
+for leg in HURRICANE_SRE_LEGS:
+if leg == current{"leg"]:
+if HURRICANE SRE_LEGS.index(leg) == len(HURRICANE_SRE_LEGS) - 1:
+return await set_flag("SRE_LEG", HURRICANE_SRE_LEGS[@})
+return await set_flag(SRE_LEG”, HURRICANE SRE_LEGS[HURRICANE_SRE_LEGS.index(leg) + 1])
+raise HTTPException(status_code=se4, detaile“No such leg”)
+1@e§_init_py
+1@#Sshortcuts. py
+import: asyncio
+from fastapi import APIRouter
+from typing import List
+from ...utils.task_manager import task_manager
+
+eee ee en ee
+from typing import List
+from ...utiis.task_manager import task_manager
+router = APIRouter(tags=["Automations Shortcuts"], prefix-"/kafka”)
+Grouter. put(”/partition_reassignnent”)
+async def partition_reassignment_shortcut(cluster, topic, partitions: List[int|str] = ["*"])}:
+return await task_manager-run_task{"partition_reassignment™, **{"cluster”: cluster, “topic”: topic, "partitions": partitions})
+@router.put("/reset_filebeat”)
+async def reset_filebeat_shortcut(host: str):
+return await task manager.run_task("reset_filebest", **{"host™: host})
+Grouter.put(”/check_and_start_broker”)
+async def check_and_start_broker_shortcut(host: str):
+return await task_manager.cun_task("check_broker_health", **{"host”: host})
+1@#$__init__.py
+I@#$shortcuts.py
+from fastapi import APIRouter
+from ...utids,task_manager import task_manager
+router = APIRouter(tags=[“Automations Shortcuts”], prefix="/wnq")
+@router.put(”/channel_reset”)
+async def channel_peset_shortcut (queue_manager, channel):
+return await task_manager.run_task("channel_reset”, **{"queue manager”: queue_manager , “channel”: channel}) I
+@router.put("/clean_dlq")
+async def clean_dlq_shortcut(queue_nanager: str):
+return await task manager.run_task("clean_diq”, *#{"queue_manager”: queue_anager})
+1@a$_ init__.py
+!@e$shortcuts. py
+from fastapi import APIRouter
+from ...utils.task_manager import task manager
+router = APIRouter(tags=[“Automations Shortcuts"], prefix="/nifi*)
+Grouter .put("/erashloop”)
+async def nifi_crashloop_shortcut(cluster: str):
+return await task manager.run_task("nifi_crashloop”, **{"cluster”: cluster})
+ny
+
+ee ee ee mE
+return await task_manager.run_task("nifi_crashloop", **{"cluster": cluster})
+@router.put("/delete_pod_force")
+async def ocp_delete_pod_force_shortcut(nifi_pod_name: str):
+return await task manager.run_task("ocp_delete_pod_force”, **{"nifi_pod_name": nifi_pod_name})
+router. put("/nifind”)
+async def nifind_shortcut(nifi_object):
+retuen await task_manager.run_task(“nifind”, *#{"nifi_object": nifi_object})
+@router.put("/check_and_clean_var_lib_nifi")
+async def nifi_clean_storage_shortcut(node: str):
+return await task_manager.run_task("clean_nifi_storage", **{"node": node})
+lgegstatistics.py
+from fastapi import APIRouter, WebSocket
+from ...src.NiFi import NiFi
+router = ApIRouter(tags=["Statistics”], prefix-"/nifi")
+G@router.get("/")
+async def nifi_get_nodes(cluster_nane: str):
+clust = NiFA(name=cluster_nane)
+return [node-name for node in clust.get_nodes(}]
+@router.websocket("/stream_logs")
+async def stream_logs(websocket: WebSocket, node: str):
+await websocket.accept() I
+Clust = NiFifrom_node(node)
+clust..get_nodes()
+for pod in clust.nodes:
+4f pod.name == node:
+await pod.stream_logs(websacket)
+t@ugalert.py
+from pydantic import BaseModel, constr, Json
+from ..utils.task_manager import task_manager
+from ..config import GRAFANA URL, ALERTS MANAGER URL, GRAFANA_QUERY URL, REQUESTS_CLIENT, GRAFANA HEADERS, GRAFANA_ALERTS QUERY
+from ..src.Archive import ArchiveAlert, Archive
+import re, pandas as pd, asyncio
+class Alert(BaseModel):
+application: constr(max_length=256) = ""
+Node_name: constr(max_length=256) = ""
+network: canstr(max_length=256) = *"
+object: constr(max_length=256) = ""
+ee eee, am
+
+oe
+node_name: constr(max_length=256) = ""
+network: constr(max_length-256) = “*
+object: constr(max_length=256) = ""
+operator: constr(max_length=256) = ""
+message: constr(max_length=2e48) = ""
+time_created: constr(max_lengthe256) = "~
+severity: constr(max_length=256) = ""
+toShow: constr(max_length=256) = ""
+history_id: constr(max_length=256) = ""
+async def clear(self):
+req = REQUESTS_CLIENT.get(f"{ALERTS_MANAGER_URL}/clear/{self.history_id}")
+return req.status_code == 268
+async def suspend(self):
+req = REQUESTS_CLIENT.get(f°{ALERTS_MANAGER_URL}/remove/{self.history id}*)
+return req.status_code == 200
+async def return_alert(self):
+req = REQUESTS CLIENT. get(F"{ALERTS_MANAGER_URL}/return/{self.history_id}")
+return req.status_code == 200
+async def parse(self, query_paraas):
+for key, value in query_params_items():
+setattr(self, key, value)
+async def automation_picker(self):
+if “is getting full” in self.message: I
+queue_nanager = self-node_name.split(‘:*)[@]
+argi = self.node_name.split(’:‘){1]
+return {
+“possible responsible teams”: await Archive.get_responsible_team(await Archive.search(argt, “hurricane”, True}),
+"Grafana_URL": #"(GRAFANA URL}/d/QUEUES-nO/wng-wat cher ?orgId=18var-environment~Al1&var -networkeAll&var-region=Rvar-QuGR={queue_manager}avar-queue=(arg1}&var-queve_regex="
+}
+else:
+return await AutoFix.autofix(self)
+class AutoFix(Alert):
+archive: bool = False
+args: dict = {}
+conditions: Alert = None
+class Config:
+arbitrary _types_allowed = True
+
+class Config:
+arbitrary_types_allowed = True
+@classmethod
+async def autofix(cls, alert: Alert):
+async def validate_conditions(conditions: dict):
+for attr, val in conditions.items():
+if val:
+if val not in getattr(alert, attr):
+return False
+return True
+for automation, fix in task_manager.task_registry.items():
+if not fix["autofix"]:
+continue
+autofix = cls(**vars(Fix[“autofix"}))
+if await validate_conditions(vars(autofix.conditions)):
+arguments = {arg: re.search(list(val.values())[@], getattr(alert, list(val.keys())[@]))-group(1) for arg, val in autofix.args-items()}
+if avtofix.archive:
+archive = Archivealert()
+archive.technology = alert application
+archive-actions_taken = automation
+archive.cluster = str(list(argunents.values()))
+else:
+archive = False
+await alert.clear()
+return avait task manager.schedule_alert(automation, archive, **arguments)
+return “Couldn't find a fix for this alert”
+class AlertScanner(BaseModel) :
+@staticmathod I
+def scan():
+def scan_alert(row, tasks):
+rou["severity”] = str(row[“severity"))
+row{"time created"] = str(row["time_created”])
+tasks. append(AutoFix.autofix(Alert(**rou)))
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+tasks = [}
+alerts = REQUESTS_CLTENT post (GRAFANA_QUERY_URL, headers-GRAFANA HEADERS, json=GRAFANA_ALERTS_QUERY). json()
+frane = alerts{"results”}["A"I{"Frames”] [0]
+fields = frame["schema"]["Fields"}
+values = frane("data”]{"values"]
+table = pd.bataFrame([dict(zip([field["name"] for field in fields], row}) for row in list(zip(*values))])
+table.apply(scan_alert, axise1, args=(tasks,)})
+Joop. run_until_complete(asyncio.gather(*tasks})
+return #°Scanned {ien(table)} Alerts"
+!@ngarchive.py
+ee eee ee mur yin TTMETRME TEAM OI ACYITET ABDFLTWE TYWEM pCMIEETC CITENT ADruTwe TAVEM IID} unoeTrAME auTU
+
+ee eee en RE
+return f"scanned {len(table)} Alerts”
+lewgarchive.py
+from ..config import ARCHIVE_URL, TIMEZONE, TEAMS BLACKLIST, ARCHIVE_TOKEN, REQUESTS CLIENT, ARCHIVE TOKEN_URL, HURRICANE AUTH
+from pydantic import BaseModel, constr, 3son
+from typing import Optional
+from collections import Counter
+from requests.auth import HTTPBasicAuth
+ieport datetime, re
+class Archive(Basemodel }:
+cluster: Optional{constr(max_length=2500)] = 7"
+description: Optional (conste(max_length=2500)] = “"
+technology: Optional[constr(max_length-64)] = ""
+username: Optional[constr(max_length=64)] = “AutoFix™
+team: Optional [constr(max_length=64)] = "Hurricane"
+body: Optional{Json] = Kone
+report_type: Optional[constr(max_length=64)] = None
+@staticnethod
+async def verify get_token():
+global ARCHIVE_TOKEN
+req = REQUESTS_CLIENT.get (f"{ARCHIVE_TOKEN_URL }/validate?token={ARCHIVE_TOKEN}”, headers={"Authorization”: ARCHIVE TOKEN}, verify=False)
+if req.status_code != 206 or req.text =~ “false”:
+ARCHIVE_TOKEN = REQUESTS_CLIENT.get(f"{ARCHIVE_TOKEN_URL}”, headers-{"Authorization”: ARCHIVE_TOKEN}, auth-HTTPBasicauth(HURRICANE_AUTH[ “username” J, HURRICANE_AUTH["password"]), verify=False).text[{1:]
+Gs-a)
+@staticmethod
+async def search(search, team, incidents):
+await Archive.verify_get_token()
+report_type = “incident” I
+if not incidents:
+report_type = “alert”
+eq = REQUESTS. CLIENT. post (F"{ARCHIVE_URL}/search/{tean}/{report_type}”, json={"search”: search}, headers={"Authorization”: ARCHIVE_TOKEN}, verify=False)
+return req.json(}
+@staticmethod
+async def get_responsible_team(search: dict):
+count. = Counter()
+teams = []
+for entry, value in search.items(}:
+count update(re.findall("(\w+)\s*\([@-9]4\)\s*-{1}", value[@][“Oescription").replace(“\\n", “ ”)))
+count update (re. Findall("\((@-9]4\)\s*(\m+)", value[@]["Description”] replace("\\n", “ *}))
+for t in count:
+if count(t] > 2 or ((t[@] > ‘a’ and t[@] < 'z*) on (t{@] > ‘A’ and t{0] < 'Z')):
+teams.append(t)
+return sorted(List(filter(lanbda x: x not in TEAMS_GLACKLIST or not x == search, teans)))
+ene
+
+eee nn nnn eee nN
+class archiveAlert(Archive):
+report_type: Optional[constr(aax_length-64)] = “alert”
+actions_taken: Optional[constr(max_length=250@)] = “"
+def _init_(self, **date}:
+Super().__init__(**data)
+async def check_if_exists(self):
+async def check_alert(alert):
+for key, value in self.body.items():
+if str(alert[key]) != str(value):
+return False
+return True
+now = datetime, datetime.now(TIMEZONE) .strftime(“RY-Xm-Xd")
+await Archive.verify_get_token()
+req = REQUESTS_CLIENT.get(url-f" {ARCHIVE_URL}/range/{self.team}/{now}/{now}", headers={“Authorization": ARCHIVE_TOKEN}, verify=False).json()
+for alert in req{next(iter(req))]:
+if await check_alert(alert):
+return True
+return False
+async def send_to_srchive(self):
+avait Archive.verify_get_token()
+sel¥-hody = {
+“@timestamp": datetine.datetime.now(TIMEZONE) .strftine("XY-Xm-Xd"),
+“cluster: self.cluster,
+“description”: self.description, I
+“report_type”: self.report_type,
+“username”: self.username
+t
+if await seif.check_if_exists():
+return "Already Exists”
+req = REQUESTS. CLIENT. post (url=f"{ARCHIVE_URL}/{self.team}”, jsone[self.body], verify-False, headers-{"Authorization": ARCHIVE TOKEN})
+return req.json()
+class ArchiveIncident (Archive) :
+report_type: Optional[constr(max_length=64)] = “incident”
+caid: Optional[constr(max_length=19)] = “*
+description: optional[constr(max_length=25e2)] = ""
+fix: Optional[conste{max_length=2508)] = ""
+incident_type: Optional [constr(max_length=64)] = “"
+network: Optional [constr(max_length=64)] = “"
+symptom: Optional [constr(max_length=64)] = ""
+root_cause: Optional [constr(max_length=64)] = “"
+impact: Optional[constr(max_length-64)] = “*
+monitor: Optional {constr(max_length=64)} = ‘"
+Oe wet a eh cand ome
+
+lt aaa ae eee
+root_cause: Optional [constr(max_length=64)] = ""
+inpact: Optional[constr(max_length-64)] = "*
+monitor: Optional {constr(max_length=64)] = “"
+clients: Optional [constr(max_length-64)] = "”
+error: Optional [constr(max_length=35)] = ""
+did_sonething: Optional[bool] = False
+hamalim: Optional{bool} = False
+escalation: Optional[bool] = False
+def __init_(self, **data):
+super().__init__(**data)
+async def send_to_archive(self):
+await Archive.verify_get_token()
+self.body = {
+"@timestamp": datetine.datetime now( TIMEZONE). strftime("XY-Xm-Xd"),
+“cAID": self-caid,
+"Description": self.description,
+"Fix": self.fix,
+“Incident Type": self. incident_type,
+“Network”: self.network,
+“Symptom”: self.symptom,
+“root cause”: self.root_cause,
+“Inpact": self.impact,
+“Monitor”: self.monitor,
+“Technology”: self-technology,
+“Clients”: self.clients,
+“escelation": “Yes” if self.escalation else "No,
+“peport_type”: self.report_type,
+“@tinestanp": datetine.datetime.now()-strftime("AV-ta-d"),
+“username”: self.username
+? I
+req = REQUESTS_CLIENT. post (url=f"{ARCHIVE_URL}/{self.team}", json=[self.body], verify-False, headers<{"Authorization”: ARCHIVE_TOKEN})
+return await req.json()
+1@#$Host. py
+From socket impart AF_INET, gethostbynane, gethostbyaddr
+from -.config import DOMATN_FQOH
+from pydantic import BaseModel, constr
+from shaulmiko import ShaulMiko
+rom fastapi inport status
+from fastapi.exceptions import HTTPException
+class Host(BaseModel) :
+hostname: constr{max_length=256} = None
+ip: constr(max_length=256) = None
+os: constr(max_length=256) = None
+network: constr(max_length=256) = None
+region: conste(max_length=256) = None
+connection: ShaulMiko = None
+
+et edateriae ieee ei aa ae re
+region: constr(wax_length=256) = None
+connection: ShaulMiko = None
+def init__(self, **data):
+super(}.__init__(**data)
+if self-hostname:
+if °." not in self.hostname:
+self.hostname += £”,{DOMAIN_FQDN}”
+class Config:
+arbitrary_types_allowed = True
+def dns_to_ip(self):
+Sets ip property of Host from dns and returns the value
+if "." not in self.hostname:
+self.hostname += £7.{DOMAIN_FQDN}”
+self.ip = gethostbynane(f”{self.hostname}")
+return self.ip
+def ip_to_dns(sel¥):
+Sets ip property of Host from dns and returns the value
+res = gethostbyaddr(self.ip)
+self.hostname = res.name
+return self hostname
+I
+def _execute(self, command):
+if self.connection:
+return self.connection.execute(conmand, clean_prompt-True) .strip()
+raise HTTPException(status.HTTP_408 REQUEST TIMEOUT, “No connection connect to Host”)
+def _connect(self, username, password) -> ShaulMiko:
+try:
+self.connection = ShaulMiko(self.hostname, 22, username, password)
+return self.connection
+except Exception as e:
+sel¥.connection = None
+raise HITPException(status.HTTP_417_EXPECTATIOM FAILED, f"Couldn't connect to Host {self.hostnane}: {str(e)}")
+def _execute_no_cutput(self, command):
+if self.connection:
+return self.connection.execute(conmand, timeout=8)
+raise WITPException(status.HTTP_498_REQUEST_TIMEQUT, “No connection to Host")
+
+tn ee
+if self.connection:
+return self.connection.execute(command, timeout-2)
+raise HITPException(status.HTTP_408_REQUEST_TIMEOUT, “No connection to Host”)
+def _connect_and_execute(self, username, password, command):
+self._connect(usernane, password)
+return self._execute(conmand)
+def _connect_and_execute_no_output(self, username, password, command) :
+if not self.connection:
+self._connect(username, password)
+self.connection.execute(comand, timeout=8)
+return #*Sent Command {comand}"
+def get_cpu_usage(self):
+return self._execute(“top -bni | grep \"Cpu(s)\" | sed \"5/-*, *\\([8-9. J*\)R* id .*/\\I/\" | ak {print 190 - $5\"R\"}'*)
+def get_nemory_usage(self}:
+return self._execute("free | awk */Men/{printf(\"%.2f%\", $3/$2*180)}"")
+def get_ol1_disks_usage(self):
+out = {}
+disks = self._execute(“df -h | awk "{print S6\":\"S5\"\7}'")
+try:
+for disk in disks.split("\n"):
+if "Usex" in disk:
+continue
+out[disk.split(":"){@]] = disk.split(":"}[1]
+return out I
+except:
+return “N/A”
+def get_root_usage(self):
+return self._execute(“df -h | awk “$NF=<\"/\"{printf \"K.2%\", $5}'")
+def get_io(self):
+lines = self._execute(“Jostat -x | awk “WR>G{print $1,$6,$7,$8}'")
+data = {}
+for line in lines.split(”\n"):
+if line:
+fields = line.split()
+device = Fields[e]
+data[device] = {
+“r_per_s”: float(fields[1]),
+“wper_s": float(fields(2]),
+“p_merged_per_s":float(Fields[3])
+.
+
+i ee
+“p_per_s": float(fields[1]),
+“wper_s": float(fields[2]),
+“r_merged_per_s”:float(fields[3])
+}
+return data
+lensKafka.py
+import json
+from fastapi.exceptions import HTTPException
+from fastapi import status
+from .Host import Host
+from -Zookeeper import Zookeeper
+from typing inport List
+from ..config import VICTORIA _QUERY_METRICS URL, REQUESTS_CLIENT, KAFKA_AUTH, REASSIGN COMMAND
+ron pydantic import BaseModel, constr
+class Broker(Host):
+id: constr(max_length=256) = None
+cluster: constr(max_length=256) = None
+listen_port: constr(max_length=5) = “9092”
+up: bool = True
+connected_to cluster: bool = True
+def _init_(self, **data):
+super()-__init__(**data)
+self.get_broker_state()
+def connect_to_broker(self):
+self._connect(KAFKA_AUTH[“username”], KAFKA_AUTH["password™])
+return True
+I
+def get_broker_state(self):
+stat = REQUESTS CLIENT. get (VICTORIA QUERY_METRICS URL + ¥‘kafka_broker_info{{address="{self. hostname}: {self.listen_port}"}}').json()("data]["result”]
+if not stat:
+raise HTTPException(status.HTTP_4@0_BAD_REQUEST, “Braker Doesn‘t exist")
+try:
+self.connect_to_broker()
+except:
+self.up = False
+try:
+self.connected_to cluster = bool(stat[@]["value”}{1})
+except:
+self.connected_to_cluster = False
+if self.connection:
+try:
+if len(self._execute("ps -ef { grep java.*kafka | grep -v grep”)) > 10:
+self.up = True
+else:
+self.up = False
+
+en ne eI
+self .up = True
+else:
+self.up = False
+except:
+self.up = False
+def stop(self):
+self._connect_and_execute_no_output(“pkill -9 .*java.*kafka.*")
+return True
+def start(self):
+if self.up:
+return HTTPException(status HTTP_2@8 ALREADY REPORTED, “Broker is already up")
+else:
+if self.connect_to_broker():
+return self._execute("/home/kafka/scripts/daemon-kafka-start")
+class KafkaCluster(BaseModel):
+rane: constr(max_length=256) = None
+brokers: List[Broker] = []
+zookeepers: List[Zookeeper] = [1
+region: constr(max_length=256) = None
+network: constr(max_length-256) = None
+def _init_(sel¥, **data):
+super(}.__init__(**data)
+self.get_brokers()
+self.get_zookeepers()
+“"" an example if ever going full async I
+@classmethod
+async def create(cls, **data):
+self = cls(**data)
+await asyncio.gather(self.get_brokers(), self.get_zookeepers())
+return self""”
+def get_brokers(self):
+info = REQUESTS_CLIENT. get (VICTORTA_QUERY_METRICS_URL + f*kafka_broker_info{{cluster="{self.name}"}}*).json()
+for broker in info[“data"}["result”]:
+self. brokers .append(Broker(hostnane=broker[ “metric” }["address"].split(":")[®], cegion-broker["metric™]["site"],
+Listen_port=broker[ “metric” ][”address" ].split(":")[1], state-broker[“value”]{1]})
+return True
+def get_zookeepers(self):
+nfo = REQUESTS_CLIENT.get(VICTORTA_QUERY_METRICS_URL + f‘up{{job="zookeeper", cluster="{self.nane}"}}').Json()
+zookeeper_list = “"
+for zook in infof"data"] (“result”):
+self. zookeepers. append (Zookeeper(hostnane=z00k{ “aetric")["instance”] split(":"}[@J, region-zook{”metric"]["site"]))
+neat eee TE tet aD haeenemnl fen & aanbanmeanef A¥ Viekan nanth ®
+
+ee erent ee Oo _
+zookeeper_list = "*
+for z0ok in info[“date")["result”]:
+self. zookeepers append (Zookeeper (hostname=zook["metric”]["instance"].split(":")(@], region=zook[“metric”][“site”])}
+zookeeper_list += #"{self.zookeeper's[ -1].hostnane}:{self.zookeepers[-1] .listen_port},”
+zookeeper_List.removesuffix(”,”)
+return zookeeper_list
+def connect_to_random_broker(self) -> Broker:
+for broker in self.brokers:
+try:
+broker._connect(KAFKA_AUTH[“username”], KAFKA_AUTH["password”]}
+return broker
+except:
+pass
+else:
+raise HTTPException(status.HTTP_417_EXPECTATION FAILED, “Couldnt connect to any broker")
+def partition reassignment(self, topic: str, partitions: list):
+broker = self.connect_to_random_broker()
+if partitions == ("*"]:
+topic _to_move = {"topics": [{"topic": topic}], “version”: 1}
+else:
+topic_to move = {"topics": [{"topic™: topic, “partitions”: [{"partition": int(p}} for p in partitions]}], "version": 1}
+broker._execute(F"echo ‘{Json.dumps(topic_to_mave)}‘ > hurricane. json")
+conmand = REASSIGN_COMMAND.replace("<zook>", self. get_zookeepers()).removeprefix(",”)
+proposed = broker. execute(comnand + f° --broker-list ~{",".join(str(i) for i in range(1, len(self-brokers) + 1))}"' +“ --topics-to-move-json-file hurricane. json --generate”).split(“Proposed partition
+reassignment. configuration"}[4]
+broker. execute(frecho ‘{proposed}* > hurricane_generated.json")
+broker. execute(#’ export KAFKA_OPTS="-Djava. security auth. login.config-/hone/kafka/config/client_jaas.conf” && {command} --reassignment-json-file hurricane_generated.json --execute’)
+return broker._execute(f' {command} ~-reassignment-json-file hurricane_generated.json --verify")
+I@OSNiFi.py I
+from pydantic import constr, BaseHodel
+from typing import List
+from .OCP import Pod, Cluster
+from ..config import REQUESTS_CLIENT, MIFI_AUTH, WIFI_DB, NAAS_DB, CLUSTER_MANAGER, OPENSHIFT_API_SCHEME, TIMEZONE
+from ..utils.general import timeout
+from fastapi.exceptions import HTTPException
+from datetime import datetime
+import re, time
+class Node(Pod):
+url: constr(max_length=256) = None
+connected: bool
+node_id: canstr(max_length=128) = None
+cluster_uri: constr(max_length=$12) = None
+¢luster_token: constr(max_length=2043) = None
+def get_connection(self):
+eee ere rere ere IE ctecenn nats "dad€d nnd lenntantiantrluctan bandane tt Caruana Anthanientina Gaanan": €"fealé cluctan tnbant") uandfuctalen\ deanf\f*etactan" 1 nadac®1
+
+ee eee een ee me
+def get_connection(selt):
+req = REQUESTS CLIENT.get(self.cluster_url + "/nifi-api/controller/cluster”, headers+{"__Secure-Authorization-Bearer": f"{self.cluster_token}"}, verify=False).json()["cluster”]{"nodes”]
+status = next(list(filter(lambda x: self.name in x{"address"], req)))["status”]
+self.connacted = True if status == “CONNECTED” else False
+return status
+def connect_node(self):
+req = REQUESTS CLIENT. put(self.cluster url + ¢"/nifi-api/controller/cluster/nodes/{self.node_id}", headers@{"__Secure-Authorization-Bearer": f"{self.cluster_token}"}, json-{"nade": {"nodeld": self.node_id,
+“status”; “CONNECTING"}}, verify-False)
+return req. status_code == 208
+@itimeout(6@, “Node Is DISCONNECTED”)
+def wait_for_node_to_connect(self, url, token):
+while not self.connected:
+connected = seif.get_connection(url, token)
+4f connected == "DISCONNECTED":
+raise "Node Is DISCONNECTED”
+vime.sleep(8.5)
+return True
+def delete_work(self):
+self.exec_pod(["rm™, "-rf", “/var/Lib/nifi/work”))
+def delete_state(self):
+self.exec_pod(["rm™, “-rf", */var/lib/nifi/state"])
+I
+def deiete_database(self):
+sel¥.exec_pod([“en", “-rf", “/var/Lib/nifi/database_repository"))
+def backup_and_delete_flow(self):
+self.exec_pod(["mv", “/var/Lib/nifi/conf/flow.xml.gz", "/var/lib/nifi/conf/flow.xml.gz.b¢"])
+self.exec_pod([“nv", “/var/lib/nifi/conf/flow. json.gz", "/var/1ib/nifi/conf/flow.json.gz.bc"])
+def clean_old_logs(self, pattern):
+self.exec_pod([“/bin/bash”, "-c", f'cd /var/lib/nifi/logs; newest-$(1s -t | grep “{pattern}” | head -n1); 1s | grep “{pattern}” | grep -vE “*$newest$” | xargs rm -F'])
+def clean_journals(self):
+self.exec_god(["/bin/bash", ’-c", ‘cd /var/Lib/nifi/Flowfile_repository/journals; newest=$(1s -t | head -nl); find . -maxdepth 1 -type f | -name “$newest” -exec rm -f {} \3°])
+def clean_ali_old_logs(sel¥):
+self.clean_old_logs(“nifi-app*")
+self.clean_old_logs("nifi-user*")
+SEE hanntebcnneey
+
+def clean_all_old_logs(self):
+self.clean_old_logs(“nifi-spp*")
+self.clean_old_logs("nifi-user*”)
+self.clean_old_logs("nifi-bootstrap*”)
+def cleanup_and_reset_node(self):
+self.delete_pod()
+sel¥.delete_database()
+self delete_state()
+sel¥.delete_work()
+self.backup_and_delete_flow()
+self.delete_pod_force()
+class NiFi(BaseHodel):
+nodes: List{Node] = []
+network: constr(max_length=256) = None
+name: constr({max_length=256) = Wone
+url: constr(max_length=256) = None
+openshift_url: constr(max_length=256) = None
+region; constr(max_length=256) = None
+openshift_cluster: constr(max_length=256) - None
+token: constr(max_length=2048) = None
+cluster: Cluster = None
+class Config:
+arbitrary types_allowed = True
+def _init (self, **data):
+super().__init__(*#data)
+self.connect_and_get_details() I
+@classmethod
+def fron_node(cls, node: str):
+if node[-1}.isdigit():
+return cls(name-re_search("(.*)-[@-9]+", node).group(1))
+return cls(name=node)
+def determain_region(self):
+self.region = self openshift_url.split(“ocp4~")[1].split(”.")[@]
+self.openshift_cluster = f"ocp4-{self.region}”
+def get_nifi_token(self):
+try:
+REQUESTS_CLIENT. cookies.clear(donain=f" .{self.url-split("://")[1].split("/"}[@]}'}
+access token = REQUESTS _CLIENT.post(self.url + '/nifi-api/access/token', data-NIFI_AUTH, headers-{“Content-Type": “application/x-wat-form-urlencoded"}, verify=False)
+if access_token.status_code > 399:
+raise Exception()
+
+a a a ee a
+access_token = REQUESTS_CLIENT.post(self.url + ‘/nifi-api/access/token’, datasNIFI_AUTH, headers={“Content-Type": “application/x-wuw-form-urtencoded jy very" arse)
+if access_token.status_code > 399:
+raise Exception()
+except:
+raise HTTPException(40a, detail-f"Error: cant get token might be non-existant fron {self.name}")
+self.token = access_token. text
+def check token(self):
+if "_Secure-Authorization-Bearer” in REQUESTS_CLIENT.cockies.get_dict(domain=f” {self .url.split(”://")[1].split("/")[@]}')-keys():
+Self.token = REQUESTS CLIENT .cookies.get(“__Secure-Authorization-Bearer”, donain=f*.{self.url.split("://")[1].split("/"}[@]}")
+if not self. token:
+return False
+try:
+req = REQUESTS_CLIENT.get(self.url + ‘/nifi-api/access/token/expiration’, headers={"_ Secure-Authorization-Bearer”: f"{self.token}"}, verity-False)
+if req.status_code > 299:
+return False
+return True
+except:
+return False
+def connect_ocp_cluster(self):
+self.cluster = CLUSTER MANAGER. get_cluster_conneciton(self-openshift_cluster, NIFI_AUTH[“usernane”])
+if not self.cluster:
+self-cluster = CLUSTER_MANAGER.connect_cluster(OPENSHIFT_APT_SCHEME.replace("<openshift_cluster>", self.openshift_cluster), self.openshift_cluster, NIFI_AUTH["usernane”], NIFT_AUTH[“password”],
+region=self.region)
+def connect_and_get_details(self): # Blame Sierra for this pile of shit
+maas = True
+if sel¥.name: I
+info = NAAS_0B-nas_deployaent.find_one({"name”: self.name}, {"_id": @})
+if not info:
+info = NIFI_DB.nifienvironnents.find_one({“name": self.nane}, {"_id": €})
+naas = False
+elif self.url:
+self.url = self.url.split(”://7)[1]-split("/7)[0]
+info = NAAS_DB.nas_deployment.find_one({"URLs.nifiurl”: {"$regex”: self.url}}, {"_4d": €})
+if not info:
+info = NIFI_OB.nifienvironments.find_one({“url": {"$regex”: self.url}}, {“_id": @})
+naas = False
+else:
+raise HTTPException(4e0, detail=f*Error: cant connect without name or url")
+if not info:
+raise HTTPException(4a@, detailef"Error: cant find {self.name}”)
+if naas:
+self.url = info["URLs"][”nifiurl”].split(“/nift-api”)[e]
+self.openshift_uri = info(“URLs"][“statefulsetUr]”]
+self.name = info[“name"]
+
+self.url = Anfo["URLs"]{"nifivrl"]. split("/nifl-api”)(@]
+self .openshift_url = info[“URLs"}["statefulseturl"]
+self.nawe = info[“nane"]
+else:
+self.url = info{"nifiurl"].split("/nifi-api”)[@]
+self _openshift_uri = info["openshifturl"]
+self.name = info[“name"]
+self.deteraain_region()
+sel¥.connect_ocp_cluster()
+if self.check_token(}:
+return True
+else:
+try:
+self.get_nifi_token(}
+except:
+pass
+return True
+def get_nodes(self):
+state = ""
+now = datetime. now(TIMEZONE)
+pods = self.cluster. get_namespace_pods(self.name)
+try: nades = REQUESTS CLIENT.get(self.url + “/nifi-api/controller/cluster", headers={"__Secure-Authorization-Bearer”: #"{self.token}"}, verify=False). json()["cluster"][*nodes”]
+except: nodes = {J
+for pod in pods. items:
+if not pod.metadata.nane.startswith("zk-"):
+if next(iter(pod.status.containerStatuses[@].state))[@] == "waiting":
+if pod.status .containerStatuses[@].state.waiting.reason == “CrashLoopBackOtf”: I
+state = "CrashLoopBackoff”
+if pod.status.containerStatuses[0].state.waiting.reason =< “ImagePullBackOff":
+state = “ImagePuliBackort”
+else:
+tinestamp_with_offset = pod. status.containerStatuses[(0].state.running.startedAt .replace(’Z", “+00:00°)
+delta < now - datetime.strptine(timestamp_with_offset, "KV-%n-ZdTRH:2M:%S%z") astimezone( TIMEZONE)
+Af delta.total_seconds() < 38 and pod.status.containerStatuses[@].restartCount > 4:
+state = “CrashLoopBackorf”
+if nodes:
+node = next((n for n in nodes if pod.metadata.name in n[“address”]})
+else:
+node = {}
+self. nodes. append (Node(name=pod metadata. name,
+nanespacecself .name,
+cluster-self.cluster,
+statesstate,
+node_idenode.get("nodeId”, “"),
+connected=True if node.get("status”, "COMNECTED”) == "CONNECTED" else False,
+cluster_token=self.token if self.token else "",
+cluster_url=self.url))
+ee ae
+
+connected-True if node.get("status", “CONNECTED") == "CONNECTED" else False,
+cluster_token=self.token if self.token else "",
+cluster_urleself-url))
+return self.nodes
+def get_storage_stats(self):
+storage = {}
+if not self.token:
+self.get_nifi_token()
+head = {"Authorization": “bearer "+ self.token}
+try:
+nodes_stats = REQUESTS _CLIENT.get(self.url + "/nifl-api/system-diagnostics?nodewise-true”, headers-head, verify-False)
+if nodes_stats.status_code > 399:
+raise Exception()
+except:
+Paise HTTPException(5@8, f"Error getting stats on {self.name}")
+for node in nodes_stats.json()["systesDiagnostics”]["nodeSnapshots”]:
+storage[node[“address”].split(".")[@]] = {"content”: node{“snapshot™){"contentRepositoryStorageUsage”][@], “Flowfile”: node[“snapshot™]["FlowFileRepositoryStorageUsage” I}
+return storage
+class NAAS(NIFA):
+owner: constr(max_length=256) = None
+america_url: constr(max_length=256) = Hone
+l@esocp.py
+from pydantic import BaseModel, constr
+from fastapi import WebSocket
+from typing import List
+fron openshift.dynamic import DynamicClient
+from openshift.helper.userpassauth import OCPLoginConfiguration I
+ron kubernetes import client
+from kubernetes.client.exceptions import Apitxception
+from kubernetes.stream import strean
+from ..utils.general Anport timeout
+import time, asyncio
+class Cluster(DynamicClient):
+name: conste(nax_length=256) = None
+region: constr(max_length=256) = None
+token_expires: int = @
+def check_token(sel#):
+if time.time() > self.token_expires:
+return False
+return True
+def get_namespace_pods(self, namespace: str}:
+return self.resources.get(api_version="v1‘, kind="Pod*).get(namespacesnamespace)
+
+def get_namespace_pods(self, nawespace: str):
+return self.resources.get(api_version="vi", kind="Pod").get(namespace=namespace)
+class Clustertanager(BaseModel):
+clusters: List[Cluster] = {]
+class ConFig:
+arbitrary types_allowed = True
+def get_cluster_conneciton(self, cluster_name: str, username: str = None} -> Cluster:
+for cluster in self.clusters:
+if cluster.name == cluster_name:
+if username:
+4 cluster.configuration.ocp_username != username:
+continue
+if cluster. check_token();
+return cluster
+else:
+self.clusters.renove(cluster)
+else:
+return None
+def connect_cluster(self, api_url: str, cluster_nase: str = None, username: str = None, password: str - None, tokensNone, region="") -> Cluster:
+if not username and not password:
+if token:
+config = OCPLoginConfiguration(api_uri, api_key-{"authorization”; “Bearer “ + token})
+else:
+raise Exception(“Username and password or token is required”)
+else: I
+config = OCPLoginConfiguration(api_url, ocp_username-username, ocp_password=password)
+config.verify_ssl = False
+if not token:
+config.get_token()
+api_cli = client .apiClient (configuration-config)
+cluster = Cluster(api_cli)
+cluster.token_expires = cluster.configuration.token["expires_in”] + tine.time()
+cluster.name = cluster_name
+cluster.region = region
+self.clusters.append(cluster)
+return cluster
+class Pod(BaseModel):
+name: conste(max_length=256) = None
+cluster: Cluster = None
+namespace: constr(max_length=256) = None
+state: constr(max_length-256) = None
+
+namespace: constr(max_length=256) = None
+state: constr(max_length-256) = None
+class Config:
+arbitrary types allowed = True
+@timeout(6a, “Pod timed out deletion")
+def wait_for_pod_deletion(self):
+pod = self-cluster.resources. get(api_version="v1', kind="Pod" }.get(namespace=self.nanespace, name=self .nawe)
+while pod.status.phase != “Pending”:
+try:
+pod « self.cluster.resources.get(api_version=‘vi', kind='Pod").get(nanespace=self.namespace, nane=self.name)
+except ApiException:
+pass
+time.sleep(@.s)
+return True
+Gtimeout(6a, "Pod timed out initializing")
+def wait_for_pod_running(self):
+pod = self.cluster.resources.get(api_version="vi', kind="Pod").get(namespace-self. namespace, nane-self.name)
+while pod.status.phase != “Running”:
+try:
+pod = sel¥.cluster.resources.get(api_version=‘vi", kind-"Pod").get(nanespace=self .namespace, name-self.name)
+except ApiException:
+pass
+time.sleep(@.5)
+return True
+def exec_pod(self, command: list): I
+api = client. CoreViApi (self.cluster.client)
+return strean(api.connect_get_namespaced_pod_exec, self.name, self.namespace, conmand-conmand, stdin-False, stdout-True, stderr-True, tty-False)
+def delete_pod(self):
+pod = self. cluster.resources.get(api_version=‘vi', kind='Pod")
+pod.delete(namespacecself.nanespace, name=sel¥.nane)
+self.wait_for_pad_deletion()
+self.wait_for_pod_running()
+return True
+def delete_pod_force(self):
+pod = self.cluster.resources.get(api_version="vi', kind="Pod")
+pod.delete(namespace=self.namespace, same-self.name, grace_period_seconds=0)
+return True
+def delete_pod_no_wait(self}:
+pod = self.cluster.resources.get(api_version="vi', kind=‘Pod*}
+ne ee anak
+
+def delete_pod_no_wait(self):
+pod = self.cluster.resources.get(api_version="vi", kind="Pod")
+pod.delete(namespace-self.namespace, name-seif.nane)
+return True
+async def stream_logs(self, websocket: WebSocket):
+api = client. Coreviapi(self.cluster.client)
+log_stream = stream(api-connect_get_namespaced_pod_exec, self.nane, self-namespace, command=["/bin/bash”,”-c","STAIL_LOGS™],
+stdout=True, stderr=True, stdin-False, tty-False, _preload_content-False)
+try:
+while log_stream.is_open()+
+Jog_stream.update(timeout=1)
+if log_stream.peek_stdout():
+await websocket.send_text(1og_strean.read_stdout())
+if log_stream.peek_stderr():
+await websocket.send_text(log_stream.read_stderr())
+await asyncio.sleep(@.1)
+except Exception as e+
+return
+finally:
+await websocket.close()
+'@ngServiceNOw.py
+# Code From Athena, Modified
+from pydantic import BaseModel
+from requests import get, post
+from ..config import SERVICE_NOW_GROUP_ID, SERVICE_NOW USERNAME, SERVICE_NOW_PASSWORD, SERVICE_NOW_URL, SERVICE_NOW_ASSUME_USERNAME
+class Incident (BaseModel): I
+title: str
+description: str
+technology: str
+dest_group: str
+tequila: bool = False
+class Servicenou():
+def __ init__(self, username, password, api_url):
+self.usernane = username
+self.password = password
+self.api_url = api_url
+self.headers = {"Content-Type": “application/json”, "Accept": "application/Json"}
+def get_call(self, call_number):
+req = get(self.api_url, headers=self.headers, paramse{ ‘number’: cali_nunber},
+auth=(self.username, self. password), verify=False)
+return req.json()
+
+a 7 _
+authe(sel¥.username, self.password), verify-False)
+return req.jsen()
+class Serviceliow(ServiceNow):
+def init__(self, usernane, password, api_url):
+super()-__init__(username, password, api_url)
+# Adds attributes to the incident body (what we will see in the incident
+self incident_body = {
+“category”: “1e",
+“subcategory”: "ams",
+“state: “oTm",
+“contact_type": “Self-service”,
+“location”: “7188.a7g=an.n12~22",
+“u_department™: "74887277",
+"impact: 2,
+"urgency": 2,
+“u_perational_ispact”: “Hurricane”,
+“u_network": “orn 027
++
+def get_user_id(self, username):
+req = get(F”{SERVICE_NOW_URL}/now/table/sys_user?user_name=(usernane}&sysparm _fields=sys_id&sysparm_limit-3",
+auth=(self.username, self.password), verifysFalse)
+return req. json()[ “result” ] [1 "sys_id™}
+def get_user_info(self, user_id):
+response = get(F-{SERVICE_NOW_URL}/now/table/sys_user/{user_id}”,
+auth-(self.username, self.password), verify=False)
+return response. json() I
+def get_service_details(self, technology):
+response = get(#"{SERVICE_NOW_URL}/now/table/cadb_rel_ci?syspara_query=child.naneL IKE(technology}%Separent .nameLAke&sysparm_fields-parent, child, parent. sys_id,child.sys_id&sysparm_display_value=true",
+authe(self-username, self.password), verify=False)
+return response. json()
+def get_group_details(self, search):
+response = get(f"{SERVICE_NOW_URL}/now/table/sys_user_group?sysparm_query=nameLIKE{ search}&sysparm_Fields=sys_id&sysparm_limit=3",
+autha(self.username, self-password), verify-False)
+if response. json():
+return response. json()["result”][@}{"sys_id”]
+response = get(f"{SERVICE_NOW_URL}/now/table/sys_user_group?sysparm_query=emailLIke{search}&sysparm_fields-sys_id&sysparm_limit=3",
+auth=(self.usernane, self.password), verify-False)
+if response. json():
+return response. json()[“result”][@]["sys_id”]
+return SERVICE_NOW_GROUP_ID
+
+EE NE
+return response. json(){"result”](@]{"sys_id"]
+return SERVICE_NOW_GROUP_ID
+def post_call(self, title, description, technology, dest_group, tequila):
+user_id = self.get_user_id(SERVICE_NOb_ASSUME_USERNAME)# Gets the user id of the user who opened the incident
+user_info = self.get_user_info(user_id)# Gets the user info of the user who opened the incident
+service_info = self.get_service detai1s(technology)
+# Adds the description to the incident body
+self.incident_body[“description"] = description
+self.incident_body[“u_phone voip] = user_info[ ‘result” ][’u_phone_voip"]
+self incident_body["u_wobile_phone"] = user_infof ‘result’ }{‘u_phone_voip’ ]
+self-incident_body["u_computer_name”] = user_info["result']['u_phone_voip"]
+self.incident_bady["opened_by”] = user_id
+self.incident_body[“caller_id] = user_id
+self. incident _body{"service_offering”] = service_info[ "result" ][@]{"child"]["display_value"]
+self.ineident_body["business_service"] = service_infof “result” ][@][ "parent" ][“display_value”]
+self.incident_body[“short_description"] = title
+self. incident_body["u_impact_technology"] = "S9ef3178148a8e5e2ed266d3b1ed658c"
+self.incident_body[“assignment_group"] = self.get_group_details(dest_graup)
+if tequila:
+self. incident_body[“u_system failure”] = True
+else:
+self incident_body[“u_system_failure"] = False
+self incident_body{"u_open_for"] = “17w* 173"
+# Posts the API request to open a new incident
+response = post(self.api_url, headers-self-headers, json-self. incident_body,
+auth=(self.username, sel¥.password), verifysFalse)
+# Returns the incident number after it has been opened
+return response. json()
+I
+def create_incident(incident : Incident):
+snow = ServiceNow(SERVICE_NOW_USERNAME, SERVICE_NOW_PASSWORD, #7{SERVICE_NOW_URL}now/table/incident?sysparm_display_value=true’)
+return snow.post_call(titlesincident.title,description-incident.description, technology=incident.technology, dest_group=incident.dest_group, tequila-incident tequila)
+def get_incident (incident_number):
+show = SePviceNow(SERVICE_NOH_USERNAME, SERVICE NOH PASSWORD, f°{SERVICE_NOW_URL}now/table/incident?sysparm_display_value-true")
+return snow. get_call (incident_number)
+1@HShMQ. py
+from .Host import Host
+from ..config import VICTORIA_QUERY_METRICS_URL, REQUESTS_CLIENT, DEFAULT_MQ_ CHANNEL, ¥Q_AUTH
+rom fastapi import HTTPEXxception, status
+rom pydantic import constr
+import pymqi,
+class QMGR(Host):
+qn: conste(max_length=256) = None
+Listen_port: constr(max_length=256) = None
+ne ey | cane,
+
+class QHGR(Host):
+gn: constr(max_length=256) = None
+listen_part: constr(max_length=256) = None
+version: constr(max_length-256) = None
+pymgi_handier: pymqi.QueueManager = Hone
+def _ init__(self, **kwargs):
+Super().__init__(**kwargs)
+self.get_connection_details()
+class Config:
+arbitrary_types_allowed = True
+def get_connection_details(self):
+Info = REQUESTS_CLIENT.get(VECTORIA QUERY METRICS_URL + f*wmq_qngr_info{{queue_manager="{self.qu}"}}').json()
+if not info[ ‘data’ ][ ‘result’ ]:
+raise HTTPException(status-HTTP_4@4_NOT_FOUND, “Queue Manager Not Found")
+self.Listen_port = info[ ‘data’ }[“resuit‘][@]{ ‘metric’ ][‘port"]
+self.hostnane = info[ ‘data’ ][ ‘result’ ][@][ ‘metric’ ]["host’]
+if not self.ip:
+self .dns_to_ip()
+def get_qn_by_host(self):
+info = REQUESTS_CLIENT.get(VICTORIA_QUERY_METRICS URL + ¥'wmq_qngr_info{{host="{self.hostname}"}}")-json()
+self.qu = info[ ‘data’ ][‘result’][@]["netric’ }[ ‘queue_manager’]
+def connect(self):
+if self.pymgi_handler: I
+if self .pymqi_handler.is_connected:
+return “Already Connected”
+if not self.qm and sel¥-hostnane:
+self.get_qn_by_host()
+if not self.ip or not self.hostname:
+self .get_connection_details()
+if not self.ip or not self.listen_port:
+raise Exception("Not Enough Details For Qa”)
+self.pynqi_handler = pymgi.connect(self.qm, DEFAULT_MQ CHANNEL, f*{self.ip}({self.1isten_port})"}
+def disconnect(self):
+sel¥.pymgi_handler.disconnect()
+def reset_channel (self, channel_name):
+cee nen et ent IE eaecnt handtaa
+
+ee ee ee
+def reset_channel(sel¥, channel_name):
+mq_pcf_exec = pynqi.PCFExecute(sel¥.pymqi_handler)
+channei_config = {
+pymgi.CHOCFC.MOCACH_CHANNEL_NAME: channel_name,
+y
+nq_pcf_exec .MQCHD_RESET_CHANNEL (channel_config)
+return True
+def restore_from_diq(self):
+sel¥._connect_and_execute_no_output(MQ_AUTH["username”], MQ_AUTH["passnord"},
+f*pkill ~9 .*runmgdlg.*; echo “ACTION (RETRY)" | timeout -s 9 6s /opt/nqn/bin/runngdlq SYSTEM.DEAD.LETTER.QUEUE {sel¥.qn}")
+retupn True
+1@#$Zookeeper.py
+from .Host import Host
+from pydantic import constr
+Class Zookeeper(Host):
+Listen_port: constr(max_length=5) = "21817
+def echo():
+return True
+1@#$__init__-py
+1@9$_init__.py I
+1@NSauth. py
+feom fastapi.responses import RedirectResponse
+from fastapi.routing import APIRouter
+fron fastapi.security import APIkeyCookie
+from fastapi import Depends, Response, Request
+from ..config import ASYNC_REQUESTS_CLIENT, GRIFFIN AUTH_URL, AVATAR_URL
+from datetime import timedelta
+from tine import time
+COOKIE_SCHEME = APIKeyCookie(name="access_token”}
+async def get_logged_user(access_token: str = Depends (COOKIE_SCHEME)):
+request = avait ASYNC_REQUESTS_CLIENT.get(f*{GRIFFIN_AUTH_URL}/authorization/validate?tokene{access_token}", verify ssl-False)
+if request.status > 299:
+return False
+request = await ASVNC_REQUESTS_CLIENT.get(#*{GRIFFIN_AUTH_URL}/authorization/getClains?token={access_token}", verify ssl-False)
+response = await request. json()
+cee my ENE ewan gad Pf encnenenf 'eAthAerrunthinme! Te
+
+EES
+return False
+request = await ASVNC_REQUESTS CLIENT. get(f*{GRIFFIN_AUTH_URL}/authorizstion/getClaims ?token=(access_token}", verify_ss]-False)
+response = await request. json()
+response[“avatar"] = f"{AVATAR_URL}/{response[ "sAMAccountName* ]}”
+return response
+router = APIRouter(tags=["Auth"], prefixe"/auth")
+@router.get(“/login")
+async def login():
+return RedirectResponse("/authentication?tokenConsumerURL=/auth/me” )
+@router.get("/me", include_in_schema=Faise)
+async def get_user(request: Request, response: Response, token = ""):
+user = await get_logged_user(token)
+if user:
+response. set_cookie(key="access_token”, valuestoken, expires-tinedelta(user[“exp"] - 48 - int(time()}}, httponly-True)
+response.status_code = 387
+response.headers{"Location™] = “/"
+return True
+if "access_token” not in request. cookies.keys():
+return RedirectResponse(’/login’)
+return await get_logged_user(request.cookies[“access_token”])
+@router.get(”/auth_example”)
+async def example_auth_required_endpoint(current_user = Oepends(get_logged_user)):
+return current_user
+t@rsgeneral .py T
+import signal
+def timeout(seconds=38, error_message=‘Function call tised out’):
+def decorator func):
+def _handle_timeout(signum, frame):
+raise TimeoutError(error_message)
+def wrapper(*args, **kwargs):
+signal.signal(signal.SIGALRM, _handle_timeout)
+signal. alarm(seconds)
+try:
+result = func(*args, **kwargs)
+finally:
+signal. alarm(@)
+return result
+return wrapper
+return decorator
+
+return wrapper
+return decorator
+1@e$logging.py
+from elasticsearch import Elasticsearch
+inport logging
+from time import tise
+class ElasticsearchHandler (logging Handler):
+def init__(self, urls, index, username, password):
+super(}._init_()
+self.urls = urls
+self. index = index
+self.usernane = username
+self.password = password
+self.connection = Elasticsearch(hostseself.urls, http_auth=(self.usernane, self.password), verify certssFalse, ssl_show_warn=False)
+def emit(self, record):
+try:
+msg = self. format(record)
+self. connection. index( index=f" {self index}-{str(datetine.now(pytz-timezone("Asia/Tel_Aviv™)).strftime("2¥-%a-2d"))}', body=msg)
+self .connection. index(index=sel.index, body=msg)
+except Exception as e:
+print(F"Couldn’t Index Log: {e}")
+def format(self, record):
+return {
+‘message’: record.getMessage(),
+"level": record.levelnane,
+*@timestanp': Ant(time()),
+*autonation_Ad': getattr(record, ‘id’, Wone), I
+“name': getattr(record, ‘automation_name’, None),
+‘progress’: getattr(record, ‘progress’, None),
+‘parameters’: getattr(record, ‘parameters‘, None),
+‘state’: getattr(record, ‘state’, None)
+}
+!@e$task_manager.py
+import asyncio, inspect, logging
+from fastapi-exceptions import HITPException
+from fastapi.responses import RedirectResponse
+from fastapi import WebSocket
+from celery import Celery
+from celery.result import AsyncResult
+rom functools import wraps
+from celery.utils.log import get_task_logger
+fron .logging import ElasticsearchMandler
+from copy import copy
+from celery.schedules import crontab
+from typing import Any
+from ..src.Archive import ArchiveAlert
+aan nee ee eee RET TPEEADr ED DIE ELACTTFEEADFLD THEY ELEGY FACVE TANTS VAEVA TACVE BARTETDAR CEDVICUC FEIEDY TACYS CALICET TRA FEN COV TACYE FAMMCCTIAA RETATI® VACUA ALITA TONE ALCTU
+
+ee
+from celery.schedules import crontab
+from typing import Any
+from ..src.Archive import ArchiveAlert
+from ..config import HURRICANE_AUTH, ELASTICSEARCH_URLS, ELASTICSEARCH INDEX, CELERY_TASKS_TOPIC, KAFKA_TASKS_BOOTSTRAP_SERVERS, CELERY TASKS COLLECTION, CELERY_TASKS_CONNECTION_DETATLS, KAFKA_AUTOMATIONS_AUTH,
+DOMAIN_FQDN, AUTOMATIONS_ELASTIC_TRACK
+class AutomationManager(Celery):
+task_registry: dict = {}
+async def list_tasks (self):
+tasks = copy(self. tasks)
+for task_name, task_obj in self.tasks.items():
+if “celery.” in task name:
+‘tasks. pop(task_name, None)
+return tasks
+async def list_autonations(self):
+auto = {}
+for task_name, task_obj in self.tasks.items():
+if “celery.” in task_name:
+continue
+autoftask_name] = {“description™: f~{self.task_registry[task_name]["description’]}",
+“arguments”: {k: str(v) for k, v in self.task_registry[task_nane][“argunents”].itens()}}
+return auto
+async def list_tasks_names(self):
+return [task_name for task name in self.tasks.keys() if “celery.” not in task_name]
+I
+async def get_task(self, task_name):
+return self.tasks[task_nane]
+async def get_args(self, task_name):
+args = self.task_registry[task_name]{“arguments”].itens()
+return {k: str(v) for k, v in args}
+async def run_task(self, task_name, **kwargs):
+await self.check_args(task_name, kwargs)
+res = await asyncio.to_thread(self.send_task, task_name, args=[False], kwargs=kwargs)
+return await asyncio.to_thread(res-get)
+async def schedule task(self, task_name, **kwargs):
+await self.check_args(task_nane, kwargs)
+return await asyncio.to_thread(self.send_task, task name, args=[False], kwargs=kwargs)
+ce rem E  npthpernt tne nama anchdon wikbuamnets
+
+eee ee ag
+from celeepusahadaiesaimpoke.toonhabad(self.send_task, task_nane, args=[False], kwargs-kwargs)
+from typing import Any
+from ..src.archive import ArchiveAlert
+Fronasynonéé§ import lHVaRECKHECAETHsUEDASTIOSEAREE,URESDIERASTERHEAREY:TNDEX, CELERY_TASKS_TOPIC, KAFKA_TASKS BOOTSTRAP_SERVERS, CELERY TASKS COLLECTION, CELERY_TASKS_CONNECTION_DETAILS, KAFKA_AUTOMATIONS_AUTH,
+DOMATN_FQDH; tAYEORATRONE_EtASTAOL@MACKON_name, kwargs)
+guto = await asyncio.to thread(self.send_task, automation_name, args«[dict (archive) if len(dict(archive); != @ and archive else False], kwargsekwargs)
+return RedirectResponse(AUTOMATIONS_ELASTIC_TRACK.replace(“<automation_id>”, auto.id))
+class AutomationHanager (Celery):
+bagkcregisthyckdacgsés€}¥, task_name, args):
+# Check if the task exists
+asyné fdeSsiistmeashs (de1691f task registry:
+‘tasksaéseopy(Betfepaitsy status_code=404, detail-"Task not found”)
+fothtabkifiakes tagknebisierself.thekeighems{pe and no garbage args
+for afg"coheryaPginatankinapegs.items():
+expetackstpop(tasklfameskNong)stry[task_nane][”arguments”].get(arg_name, Exception)
+retueh tapksted_type is Exception:
+raise HTTPException(status_code=4@0, detail-f"Got unexpected argument {arg_name}")
+if expected_type is not None and not isinstance(arg_value, expected_type):
+async def listisatunationa(séif}status_code=400, detail-f"Invelid type for argument {arg_name}"}
+auto = {}
+for task name, task_obj in self.tasks.items():
+async aefflfeelerycR_tastasklfgmesbsocket: WebSocket, task_id):
+res = Asgonfdnuet(task_id)
+«ni iautoftaskinane]rei¢“deschiptionts .fl{se]f.task_registry[task_name]("description’ ]}",
+avait asyncio,slesptarguments": {k: str(v) for k, v in self.task_registry[task_nane][“argunents”].items()}}
+retusnzauto2bsocket.sena_jso-/{"id": task_id, “state”: res.state, "progress": res.info})
+retucr await asyecio.to_thread(res get}
+async def list_tasks_names(self):
+22." petatngftaskznamesfor task, namekindself.tasks.keys() if “celery.” not in task_nane]
+rez = ésyrchesult tesk_id
+SE gusit aryccd:.to_thrsee res reaay I
+async def-get-task(selfy;taskzmame)s 22722. g27
+return selfttasks[task:namaj:: -2s.:-f:
+- asyne-def-get-args(self,;task_name):21s2-"°. i022 .dse1 “ureieare tome 2 toretizes "7
+-:::_-2 angs =.self.task:registry[task.nane][~argunents”].items()
+Sar los peturn {kr-str(v)-for-k; wan args}! ~-25 00°
+an Forge lek Ploere ates - fiir ls Ce vendit el Lo ari sets. posplite ib . AP a TAM LIU LILA Telit .
+async def run_task(self, task_name, **kwargs):--- 3: - Site Poe woo ts FA RTE TL ee et
+avait sel¥.check_ergs(task_name, kwargs)::. ~= Lite ntE
+res = await asyncio.to_thread(self.send.task, task_name, args=[False], kwargs-kwargs)
+return await asyncio.to_thread(res.get) - - -
+async def schedule task(self, task_name, **kwargs):
+await self.check_args(task_name, kwargs)
+return await asyncio.to_thread(self.send_task, task name, args-[False], kwargs-kwargs)
+banners
+
+eee
+task_mansgeornoatatisaspnaity. soathedad(Sed€.send task, task name, args-[False], kwargs=kwargs)
+task_manager.conf .broker_connection_retry_on_startup = True
+task manager-conf-result backend_options = {"database’ : CELERY_TASKS_CONNECTION_DETATLS["database"], 'taskmeta_collection’: CELERY_TASKS COLLECTION}
+taskasynagdefcechedudgodiebackedd, satémgtien(name, archive, **kwargs):
+“optamait se]f.check_args(autonation_name, kwargs)
+dnbonsoamast ; a6 fnERs, TaSKbresdyselfouensTtabie[ “datebatkOh_name, args-[dict(archive) if len(dict(archive)} != @ and archive else False], kwargs~kwargs)
+} return RediractResponse(AUTOMATIONS ELASTEC_TRACK.replace("<autonation_id>”, auto. id))
+t
+task_manager.conf.result_backend=CELERY_TASKS_CONNECTION_DETAILS[“string”]
+taskanynagdefcohéckeatgs(beddjetask’nahofiarge)e_alerts Smin': {"task': ‘autofix_scan_alerts’, ‘schedule’: crontab(minute='*/5’)}}
+# Check if the task exists
+if task_nane not in self.task_cegistry:
+def automat inal setdTTBExpaption¢stotysicodtaddapadétal]-AisekinotAfiguad?31se) +
+def #eCheakoiffthe)argunents are of the right type and no garbage args
+fonsbrganames angkYblud-Invergsaitesiag}:__name__, tags-[func._module_])
+furapspécted_type = self.task_registry[task_name]["arguments”].get(arg_name, Exception)
+def ifapnpecteiftyperes, EXCepbigs) :
+loggeaisegbTTPExteptiga(statdsnend’=400, detail-f"Got unexpected argument {arg_name}”}
+iSgexpectetetypéliggaog.uke)and not isinstance(arg_value, expected type):
+LoggeaiseoMFEBEnception¢status_code=400, detail-f"Invalid type for argunent {arg_nane}")
+if not any(isinstance(handler, ElasticsearchHandler) for handler in logger handlers):
+async def Livegthackleask(S8ifs imebsochttodWebSOckEECEBBRCHADELS, ELASTICSEARCH_INDEX,
+res = AsyncResult(task_id) HURRICANE_AUTH["username”], HURRICANE_AUTH["password”])
+while notoggaiteasynodoctoi thread(tes}ready):
+await asyncio.sleep(0.1)
+amakterwebSocketssends4sdn( {Mid ataSkaidsd"statela-Gescstate] {peageess!2,res.info})
+return await asyncio.to_thread(res.get) “automation_name': se_f.am2,
+“progress”: "@%',
+‘state STARTED’ ,
+async def get_task_status(self, task_id): oaramerers': kuargs?)
+res = AsyncResult(task_id)
+1 await sasyncio:terthread(reszready):<-"" I
+eetura dwaitzasyncioxto;thread(fesiget) r2z3-0.tou~
+return aliait-asyncio:to.thread{res info) <2i-.rec_e:t.ic
+B.TITETicy_ 1a celf.rane.
+cergessi i 2) finavocucrant. frac. tecsl_step: *20P:.2F8" If Guincceecait,me cotal_stepe:, “fluat, intys else tee
+task_manager = AutomationManager (‘task manager’; =inclades{ hurricane-home.automations”])
+‘task_manager.conf-task-serializers=.' json! : 2°22:
+task_manager.conf.task_default_queue = CELERY_TASKS_TOPIC
+‘task_manager-conf broker-url = “confluentkafka://” + 7;7-Join([#"{b. split(' :*)[@]}-{O0MAIN_FQON}:{b.split(*:*)[1}}" for b in KAFKA_TASKS_BOOTSTRAP_SERVERS.split(”.")])
+‘task_manager :conf.broker_transport~ options .=- {"kafka_comson config": {72 0.7-1: 27+".
+2 ez: ‘bootstrap. servers’: :";" Join([f"{b-split(’ :")(8}}-{DOMAIN_FODN}:{b.split(":"}[21]}” for b in KAFKA_TASKS_BOOTSTRAP_SERVERS.split(",")]),
+- “saslimechanism’; 'SCRAM-SHA-256',
+“security.protocol': "SASL_PLAINTEXT",
+‘sasl.username': KAFKA_AUTOMATIONS_AUTH[ ‘username’ ],
+*sasl.password': KAFKA_AUTOMATIONS_AUTH[ ‘ password],
+“client .id': KAFKA_AUTOMATIONS_AUTH[ ‘username’ ],,
+*group.id" : KAFKA_AUTOMATIONS_AUTH[ ‘username’ ]
+it
+task_manager.conf.task_track_started = True
+‘task_manager..conf.broker_connection_retry_on_startup = True
+task manager. conf.result_backend_ options = {“datebase’: CELERY_TASKS CONNECTION _DETATLS["database), ‘taskmeta_ collection’: CELERY_TASKS COLLECTION}
+ee eee en cntateee og
+
+en I a
+task_manager.conf.task_track_started = True ‘automation_nane’: self.name,
+task_manager.conf .broker_connection_retry_on_startup = True ‘progress’: °N/A’,
+task manager conf.result_backend_options = {"database": CELERY_TASKS_CONNECTIONSOGTAILS[FaaLEBdse"], ‘taskmeta_collection': CELERY_TASKS_COLLECTION}
+task_manager.conf mongodb_backend_settings = { ‘parameters’: kwargs})
+“options” : gaise e
+“authSource”: CELERY_TASKS_CONNECTZON_DETAILS["database™]
+} logger info(#'Task {self.name} has Finished: {str(res)}’, extra={"id': self-request.id,
+} *automation_name': self.nane,
+‘task_nanager conf .result_backend=CELERY_TASKS_CONNECTION_DETATLS["ptogng34": '100.00%',
+task_manager.conf.beat_schedule © {‘autofix_scan_alerts Smin": {"taskte' !adsv€igsstan alerts’, ‘schedule’: crontab(minute="*/5')}}
+“parameters’: kwargs})
+try:
+def automation(té€abegtép}+1, description="Automation", AutoFix: Any = false):
+def decorator(fustjet = ArchiveAlert(**args[@])
+@task_manageeltesk¢bindépedey naét{fang7 name, tags=[func-_module_})
+@uraps (func)asyncio. run(alert.send_to_archive())
+def anappertsedft iargs,et*kwargs) +
+logger int gétchaatinloggertiedthdame){self request. id} :{ste(e)}:{args}")
+Loggen.setLevel (logging. INFO)
+logger.propagate = False
+Add the function to the registry
+sig &finoteeny¢igiasteacéhahdler, ElasticsearchHandler) for handler in logger.handlers):
+task_manlggehandkereg Bias tfosearchtand]ér¢ECASTECSEARGH: URbSpcELASFIOSBARGHAINDEX; fF param.annotaticn is rot inspect.Parameter.empty else None
+HURRTCANBAUTHE Sasérnang” JarHURRECANETAUTH Tpassmecd?}}ion": description, “autofix”: AutoFix}
+task_nandgggeteaddMagdier(1égrhandien}__]["arguments”] .pop("self’, None)
+return arapoer
+return doggercinfo(f*Task {self.name} has Started", extra={‘id': self.request.id,
+*automation_name": self.name,
+‘progress’: "8%",
+‘state’: “STARTED',
+‘parameters’: kwargs})
+def update_progress(current, output=""): I
+self.update_state(state="PROGRESS‘, meta-output)
+dogger.info(output, extrae{*id': self.request.id,
+‘automation_nane': self.name,
+‘progress’: #°{Float(current)/float(total_steps)*1e@: .2f}%" 1f isinstance(type(total_steps), (float, int)) else £24",
+“state‘’: ‘PROGRESS‘})
+self.update_progress = update_progress
+sig = inspect. signature(func)
+defaults = {nane: paran.default for name, param in sig.parameters.items()
+if paran.default is not inspect.Parameter.empty}
+for name, default_value in defaults. items():
+4 name not in kwargs:
+kwargs[nane] © default_value
+try:
+res = func(self, **hwargs)
+except Exception as e:
+logger.error(fTask {self.name} has Failed: {str(e)}’, extras{‘1d’: self.request.id,
+‘automation nane": self.nane,
+"progeess’: f°N/A",
+‘state’: ‘FAILED’,
+banmamneanrts buaemel’
+
+a = Daa a
+‘automation_name’: self.name,
+‘progress’: #°N/A‘,
+‘state’: "FATLED',
+‘parameters’: kwargs})
+raise e
+Logger-info(f ‘Task {self.name} has Finished: {str(res)}', extra={"id': self.request.id,
+‘automation_name’: self.nane,
+“progress': '180.00X",
+"state’: ‘SUCCESS’,
+‘parameters: kwargs})
+try:
+if args{@):
+alert = Archivealert(**args[@])
+alert.description = f*{res}”
+asyncio.run(alert.send_to_archive())
+except Exception as e!
+print(f*Couldn't archive Alert {self.request.1d}:{str(e)}:{args}”)
+return res
+# Add the function to the registry
+sig = inspect.signature(func)
+task_nanager.task_registey[func.__name_}] = {"arguments”: {name: param.annotation if param.annotation is not inspect.Parameter.enpty else None
+for name, param in sig.parameters.items()}, “description”: description, “autofix": AutoFix}
+task_manager.task_registry[func.__name__J["arguments”].pop( ‘self, None)
+return wrapper
+return decorator
+I
+

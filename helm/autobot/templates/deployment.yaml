@@ -1,0 +1,79 @@
+{{- range .Values.microservices }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+	image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"{{ .name }}:latest","namespace":"{{ .Values.namespace }}"},"fieldPath":"spec.template.spec.containers[?(@.name==\"{{ .name }}\")].image","pause":"False"}]'
+	app.openshift.io/vcs-ref: {{ .branch }}
+	app.openshift.io/vcs-uri: "{{ $.Values.gitRepo }}/{{ .name }}"
+  name: {{ .name }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+	app: {{ .name }}
+	app.kubernetes.io/name: {{ .name }}
+	app.kubernetes.io/component: {{ .name }}
+	app.kubernetes.io/instance: {{ .name }}
+	app.kubernetes.io/part-of: {{ $.Values.appname }}
+	app.kubernetes.io/managed-by: Helm
+spec:
+  revisionHistoryLimit: 3
+  progressDeadlineSeconds: 688
+  replicas: {{- if .replicas }}
+	{{ .replicas }}
+  {{- else }}
+	{{ $.Values.replicaCount }}
+  {{- end }}
+  selector:
+	matchLabels:
+	  app: {{ .name }}
+  strategy:
+	rollingUpdate:
+	  maxSurge: 25%
+	  maxUnavailable: 25%
+	type: RollingUpdate
+  template:
+	metadata:
+	  labels:
+		app: {{ .name }}
+		deploymentconfig: {{ .name }}
+	spec:
+	  containers:
+		- name: {{ .name }}
+		  {{- if .image }}
+		  image: "{{ $.Values.image.repository }}{{ .image }}"
+		  {{- else }}
+		  image: "{{ $.Values.image.repository }}{{ .name }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+		  {{- end }}
+		  {{- if .command }}
+		  command: {{ .command | toYaml | nindent 10 }}
+		  {{- end }}
+		  imagePullPolicy: {{ $.Values.image.pullPolicy }}
+		  resources: {{- if .resources }}
+			{{ toYaml .resources | nindent 12 }}
+		  {{- else }}
+			{{ toYaml $.Values.resources | nindent 12 }}
+		  {{- end }}
+		  env: {{ toYaml $.Values.envvars | nindent 12 }}
+		  envFrom: {{ toYaml $.Values.envframvars | nindent 12 }}
+		  {{- if .mountConfigMaps }}
+		  volumeMounts:
+			{{- range $.Values.configmaps }}
+			- mountPath: {{ .path }}
+			  name: {{ .name }}
+			{{- end }}
+		  {{- end }}
+	  volumes:
+		{{- if .mountConfigMaps }}
+		{{- range $.Values.configmaps }}
+		- name: {{ .name }}
+		  configMap:
+			name: {{ .name }}
+		{{- end }}
+		{{- end }}
+	  dnsPolicy: ClusterFirst
+	  restartPolicy: Always
+	  schedulerName: default-scheduler
+	  securityContext: {}
+	  terminationGracePeriodSeconds: 38
+{{- end }}
+{{- end }}

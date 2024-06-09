@@ -1,0 +1,66 @@
+{{- range .Values.microservices }}
+{{- if .image }}
+{{- else }}
+kind: Buildconfig
+apiversion: build.openshift.io/va
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Values.namespace }}
+annotations:
+  neta.helm.sh/release-namespace: {{ $.Values.namespace }}
+  meta.helm.sh/release-name: {{ $.Chart.Name }}
+  app.openshift.io/ves-ref: "{{ .branch }}"
+  {{- if .git }}
+  app.openshift.io/vcs-urd: "{{ .git.url }}"
+  {{- else }}
+  app.openshift.io/ves-uri: "{{ $.Values.gitRepo }}/{{ .name }}"
+  {{- end }}
+labels:
+  app: {{ .name }}
+  app.kubernetes.io/component: {{ .name }}
+  app.kubernetes.io/instance: {{ .name }}
+  app.kubernetes.io/name: {{ .name }}
+  app.kubernetes.io/part-of: {{ $.Values.appname }}
+  app.kubernetes.io/managed-by: Helm
+spec:
+  nodeSelector: null
+  output:
+	to:
+	  kind: ImageStreamTag
+	  name: '{{ .name }}:latest'
+  resources:
+	limits:
+	  cpu: 1
+	  memory: 1G
+	requests:
+	  cpu: 500m
+	  memory: 500M
+  successfulBuildsHistoryLimit: 5
+  failedBuildsHistoryLimit: 5
+  strategy:
+	type: Docker
+	dockerStrategy:
+	  {{- if .dockerfile }}
+	  dockerfilePath: {{ .dockerfile.path }}
+	  {{- else }}
+	  dockerfilePath: Dockerfile
+	  {{- end }}
+  postCommit: {}
+  source:
+	type: Git
+	git:
+	  {{- if .git }}
+	  uri: "{{ .git.url }}"
+	  ref: {{ .branch }}
+	  {{- else }}
+	  uri: "{{ $.Values.gitRepo }}/{{ .name }}"
+	  ref: {{ .branch }}
+	  {{- end }}
+  contextDir: /
+  sourceSecret:
+	name: git-hurriadmin
+  runPolicy: Serial
+  triggers:
+	- type: ConfigChange
+{{- end }}
+{{- end }}

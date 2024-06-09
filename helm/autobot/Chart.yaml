@@ -1,0 +1,6 @@
+apiVersion: v2
+name: autobot
+description: A Helm chart for AutoBot
+type: application
+version: 1.0.0
+appVersion: "1.0"

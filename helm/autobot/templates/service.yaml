@@ -1,0 +1,35 @@
+{{- range .Values.microservices }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: {{ .name }}
+    namespace: {{ $.Values.namespace }}
+    annotations:
+        app.openshift.io/ves-ref: {{ .branch }}
+        {{- if .git }}
+        app.openshift.io/ves-uri: "{{ .git.url }}"
+        {{- else}}
+        app.openshift.io/vcs-uri: "{{ $.Values.gitRepo }}/{{ .name }}"
+        {{- end}}
+    meta.helm.sh/release-namespace: {{ $.Values.namespace }}
+    meta.helm.sh/release-name: {{ $.Chart.Name }}
+labels:
+    app: {{ .name }}
+    app.kubernetes.io/component: {{ .name }}
+    app.kubernetes.io/instance: {{ .name }}
+    app.kubernetes.io/part-of: {{ $.Values.appname }}
+    app.kubernetes.io/name: {{ .name }}
+    app.kubernetes.io/managed-by: Helm
+spec:
+    type: {{ $.Values.service.type }}
+    ports:
+        - name: {{ .service.targetPort }}-tcp
+            port: {{ .service.port }}
+            targetPort: {{ .service.targetPort }}
+            protocol: TCP
+    selector:
+        app: {{ .name }}
+        deploymentconfig: {{ .name }}
+...
+{{- end }}

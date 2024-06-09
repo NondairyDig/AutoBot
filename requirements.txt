@@ -1,0 +1,17 @@
+typing-extensions
+gunicorn
+fastapi
+python-multipart
+pymqi
+aiodns
+aiohttp
+shaulsiko
+notor
+openshift
+python-multipart
+Celery
+kafka-python
+confluent-kafka
+elasticsearch
+pytz
+pandas
