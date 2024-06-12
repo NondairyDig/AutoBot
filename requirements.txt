@@ -2,11 +2,11 @@ typing-extensions
 gunicorn
 fastapi
 python-multipart
-pymqi
+#pymqi
 aiodns
 aiohttp
-shaulsiko
-notor
+shaulmiko
+motor
 openshift
 python-multipart
 Celery
