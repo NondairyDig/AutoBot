@@ -65,149 +65,155 @@ class Node(Pod):
 		self.backup_and_delete_flow()
 		self.delete_pod_force()
 
-class NiFi(BaseHodel):
-nodes: List{Node] = []
-network: constr(max_length=256) = None
-name: constr({max_length=256) = Wone
-url: constr(max_length=256) = None
-openshift_url: constr(max_length=256) = None
-region; constr(max_length=256) = None
-openshift_cluster: constr(max_length=256) - None
-token: constr(max_length=2048) = None
-cluster: Cluster = None
-class Config:
-arbitrary types_allowed = True
-def _init (self, **data):
-super().__init__(*#data)
-self.connect_and_get_details() I
-@classmethod
-def fron_node(cls, node: str):
-if node[-1}.isdigit():
-return cls(name-re_search("(.*)-[@-9]+", node).group(1))
-return cls(name=node)
-def determain_region(self):
-self.region = self openshift_url.split(“ocp4~")[1]-split(”.")[@]
-self.openshift_cluster = f"ocp4-{self.region}”
-def get_nifi_token(self):
-try:
-REQUESTS_CLIENT. cookies .clear(donain=f" .{self.url-split("://")[1].split("/"}[@]}'}
-access token = REQUESTS_CLIENT.post(self.url + '/nifi-api/access/token', data-NIFI_AUTH, headers-{“Content-Type": “application/x-wat-form-urlencoded"}, verify=False)
-if access_token.status_code > 399:
-raise Exception()
-
-aa a ee a
-access_token = REQUESTS_CLIENT.post(self.url + ‘/nifi-api/access/token’, datasNIFI_AUTH, headers={“Content-Type": “application/x-wuw-form-urlencoded jy versiy"v arse)
-if access_token.status_code > 399:
-raise Exception()
-except:
-raise HTTPException(40a, detail-f"Error: cant get token might be non-existant fron {self.nane}")
-self.token = access_token. text
-def check token(self):
-if "_Secure-Authorization-Bearer” in REQUESTS_CLIENT.cockies.get_dict(domain=f” .{self.url.split(”://")[1].split("/")[0]}')-keys():
-Self.token = REQUESTS CLIENT .cookies.get(“__Secure-Authorization-Bearer”, donain-f*.{self.url.split("://")[1].split("/"}[@]}")
-if not self. token:
-return False
-try:
-req = REQUESTS_CLIENT.get(self.url + ‘/nifi-api/access/token/expiration’, headers={"_ Secure-Authorization-Bearer”: f"{self.token}"}, verity-False)
-if req.status_code > 299:
-return False
-return True
-except:
-return False
+class NiFi(BaseModel):
+	nodes: List[Node] = []
+	network: constr(max_length=256) = None
+	name: constr(max_length=256) = None
+	url: constr(max_length=256) = None
+	openshift_url: constr(max_length=256) = None
+	region: constr(max_length=256) = None
+	openshift_cluster: constr(max_length=256) = None
+	token: constr(max_length=2048) = None
+	cluster: Cluster = None
+
+	class Config:
+		arbitrary_types_allowed = True
+
+	def __init__(self, **data):
+		super().__init__(**data)
+		self.connect_and_get_details()
+
+	@classmethod
+	def from_node(cls, node: str):
+		if node[-1].isdigit():
+			return cls(name=re.search("(.*)-[@-9]+", node).group(1))
+		return cls(name=node)
+
+	def determine_region(self):
+		self.region = self.openshift_url.split("ocp4~")[1].split(".")[0]
+		self.openshift_cluster = f"ocp4-{self.region}"
+
+	def get_nifi_token(self):
+		try:
+			REQUESTS_CLIENT.cookies.clear(domain=f".{self.url.split('://')[1].split('/')[0]}")
+			access_token = REQUESTS_CLIENT.post(self.url + '/nifi-api/access/token', data=NIFI_AUTH, headers={"Content-Type": "application/x-www-form-urlencoded"}, verify=False)
+			if access_token.status_code > 399:
+				raise Exception()
+			access_token = REQUESTS_CLIENT.post(self.url + '/nifi-api/access/token', data=NIFI_AUTH, headers={"Content-Type": "application/x-www-form-urlencoded"}, verify=False)
+			if access_token.status_code > 399:
+				raise Exception()
+		except:
+			raise HTTPException(400, detail=f"Error: can't get token, might be non-existent from {self.name}")
+		self.token = access_token.text
+
+	def check_token(self):
+		if "_Secure-Authorization-Bearer" in REQUESTS_CLIENT.cookies.get_dict(domain=f".{self.url.split('://')[1].split('/')[0]}").keys():
+			self.token = REQUESTS_CLIENT.cookies.get("__Secure-Authorization-Bearer", domain=f".{self.url.split('://')[1].split('/')[0]}")
+		if not self.token:
+			return False
+		try:
+			req = REQUESTS_CLIENT.get(self.url + '/nifi-api/access/token/expiration', headers={"_Secure-Authorization-Bearer": f"{self.token}"}, verify=False)
+			if req.status_code > 299:
+				return False
+			return True
+		except:
+			return False
+
 def connect_ocp_cluster(self):
-self.cluster = CLUSTER MANAGER. get_cluster_conneciton(self-openshift_cluster, NIFI_AUTH[“usernane”])
-if not self.cluster:
-self-cluster = CLUSTER_MANAGER.connect_cluster(OPENSHIFT_API_SCHEME.replace("<openshift_cluster>", self.openshift_cluster), self.openshift_cluster, NIFI_AUTH["usernane”], NIFT_AUTH["password”],
-region=self.region)
+	self.cluster = CLUSTER_MANAGER.get_cluster_connection(self.openshift_cluster, NIFI_AUTH["username"])
+	if not self.cluster:
+		self.cluster = CLUSTER_MANAGER.connect_cluster(OPENSHIFT_API_SCHEME.replace("<openshift_cluster>", self.openshift_cluster), self.openshift_cluster, NIFI_AUTH["username"], NIFI_AUTH["password"], region=self.region)
+
 def connect_and_get_details(self): # Blame Sierra for this pile of shit
-maas = True
-if self name: I
-info = NAAS_0B.nas_deployaent.find_one({"name”: self.name}, {"_id": })
-if not info:
-info = NIFI_DB.nifienvironnents.find_one({“name": self.nane}, {"_id": €})
-naas = False
-elif self.url:
-self.url = self.url.split(”://7)[1]-split("/7)[0]
-info = NAAS_DB.nas_deployment.find_one({"URLs.nifiurl”: {"$regex”: self.url}}, {"_4d": €})
-if not info:
-info = NIFI_OB.nifienvironments.find_one({“url": {"$regex”: self.url}}, {“_id": @})
-naas = False
-else:
-raise HTTPException(4e0, detail-f*Error: cant connect without name or url")
-if not info:
-raise HTTPException(4a@, detailef"Error: cant find {se]f.name}”)
-if naas:
-self .url = info["URLs"][”nifiurl”].split(“/nift-api”)[e]
-self.openshift_uri = info(“URLs"][“statefulsetUr]”]
-self.name = info[“name"]
-
-self.url = Anfo["URLs"]{"nifiurl”]. split("/nifl-api”)(@]
-self.openshift_url = info[“URLs”}["statefulseturl"]
-self.nawe = info[“nane"]
-else:
-self.url = info{"nifiurl"].split("/nifi-api”)[@]
-self_openshift_uri = info["openshifturl"]
-self.name = info[“name"]
-self.determain_region()
-sel¥.connect_ocp_cluster()
-if self.check_token(}:
-return True
-else:
-try:
-self.get_nifi_token()
-except:
-pass
-return True
+	maas = True
+	if self.name:
+		info = NAAS_DB.nas_deployment.find_one({"name": self.name}, {"_id": 0})
+		if not info:
+			info = NIFI_DB.nifi_environments.find_one({"name": self.name}, {"_id": 0})
+		naas = False
+	elif self.url:
+		self.url = self.url.split("://")[1].split("/")[0]
+		info = NAAS_DB.nas_deployment.find_one({"URLs.nifiurl": {"$regex": self.url}}, {"_id": 0})
+		if not info:
+			info = NIFI_DB.nifi_environments.find_one({"url": {"$regex": self.url}}, {"_id": 0})
+		naas = False
+	else:
+		raise HTTPException(400, detail=f"Error: can't connect without name or url")
+	if not info:
+		raise HTTPException(400, detail=f"Error: can't find {self.name}")
+	if naas:
+		self.url = info["URLs"]["nifiurl"].split("/nifi-api")[0]
+		self.openshift_uri = info["URLs"]["statefulseturl"]
+		self.name = info["name"]
+	else:
+		self.url = info["nifiurl"].split("/nifi-api")[0]
+		self.openshift_uri = info["openshifturl"]
+		self.name = info["name"]
+	self.determine_region()
+	self.connect_ocp_cluster()
+	if self.check_token():
+		return True
+	else:
+		try:
+			self.get_nifi_token()
+		except:
+			pass
+		return True
+
 def get_nodes(self):
-state = ""
-now = datetime. now(TIMEZONE)
-pods = self.cluster.get_namespace_pods(self.name)
-try: nades = REQUESTS CLIENT.get(self.url + “/nifi-api/controller/cluster”, headers={"__Secure-Authorization-Bearer”: #"{self.token}"}, verify-False). json()["cluster"][*nodes”]
-except: nodes = {J
-for pod in pods. items:
-if not pod.metadata.nane.startswith("zk-"):
-if next(iter(pod.status.containerStatuses[@].state))[@] -- "waiting":
-if pod.status .containerStatuses[@].state.waiting.reason == “CrashLoopBackOff”: I
-state = "CrashLoopBackoff”
-if pod.status.containerStatuses[0].state.waiting.reason =< “ImagePullBackOff":
-state = “ImagePuliBackort”
-else:
-tinestamp_with_offset = pod. status.containerStatuses[(0].state.running.startedAt .replace(’Z", “+00:00°)
-delta < now - datetime.strptine(timestamp_with_offset, "KV-%m-ZdTRH:2M:%S%z") .astimezone( TIMEZONE)
-Af delta.total_seconds() < 38 and pod.status .containerStatuses[@].restartCount > 4:
-state = “CrashLoopBackOrf”
-if nodes:
-node = next((n for n in nodes if pod.metadata.name in n[“address”]})
-else:
-node = {}
-self. nodes. append (Node(name=pod metadata. name,
-nanespacecself .name,
-cluster-self. cluster,
-statesstate,
-node_idenode.get("nodeId”, “"),
-connected=True if node.get("status”, "COMNECTED”) == "CONNECTED" else False,
-cluster_token=self.token if self.token else "",
-cluster_url=self.url))
-ee ae
-
-connected-True if node.get("status", “CONNECTED") == "CONNECTED" else False,
-cluster_token=self.token if self.taken else "",
-cluster_urleself-url))
-return self.nodes
+	state = ""
+	now = datetime.now(TIMEZONE)
+	pods = self.cluster.get_namespace_pods(self.name)
+	try:
+		nodes = REQUESTS_CLIENT.get(self.url + "/nifi-api/controller/cluster", headers={"__Secure-Authorization-Bearer": f"{self.token}"}, verify=False).json()["cluster"]["nodes"]
+	except:
+		nodes = {}
+	for pod in pods.items:
+		if not pod.metadata.name.startswith("zk-"):
+			if next(iter(pod.status.containerStatuses[0].state)) == "waiting":
+				if pod.status.containerStatuses[0].state.waiting.reason == "CrashLoopBackOff":
+					state = "CrashLoopBackoff"
+				if pod.status.containerStatuses[0].state.waiting.reason == "ImagePullBackOff":
+					state = "ImagePullBackoff"
+			else:
+				timestamp_with_offset = pod.status.containerStatuses[0].state.running.startedAt.replace('Z', "+00:00")
+				delta = now - datetime.strptime(timestamp_with_offset, "%Y-%m-%dT%H:%M:%S%z").astimezone(TIMEZONE)
+				if delta.total_seconds() < 38 and pod.status.containerStatuses[0].restartCount > 4:
+					state = "CrashLoopBackoff"
+			if nodes:
+				node = next((n for n in nodes if pod.metadata.name in n["address"]), {})
+			else:
+				node = {}
+			self.nodes.append(Node(
+				name=pod.metadata.name,
+				namespace=self.name,
+				cluster=self.cluster,
+				state=state,
+				node_id=node.get("nodeId", ""),
+				connected=True if node.get("status", "CONNECTED") == "CONNECTED" else False,
+				cluster_token=self.token if self.token else "",
+				cluster_url=self.url
+			))
+	return self.nodes
+
 def get_storage_stats(self):
-storage = {}
-if not self.token:
-self.get_nifi_token()
-head = {"Authorization": “bearer "+ self.token}
-try:
-nodes_stats = REQUESTS _CLIENT.get(self.url + "/nifl-api/system-diagnostics?nodewise-true”, headers-head, verify-False)
-if nodes_stats.status_code > 399:
-raise Exception()
-except:
-Paise HTTPException(5@8, f"Error getting stats on {self.name}")
-for node in nodes_stats.json()["systesDiagnostics”]["nodeSnapshots”]:
-storage[node[“address”].split(".")[@]] = {"content”: node{“snapshot™){"contentRepositoryStorageUsage”][@], “Flowfile”: node[“snapshot™]["FlowrileRepositoryStorageUsage” I}
-return storage
-class NAAS(NIFA):
-owner: constr(max_length=256) = None
-america_url: constr(max_length=256) = Hone
+	storage = {}
+	if not self.token:
+		self.get_nifi_token()
+	head = {"Authorization": "bearer " + self.token}
+	try:
+		nodes_stats = REQUESTS_CLIENT.get(self.url + "/nifi-api/system-diagnostics?nodewise-true", headers=head, verify=False)
+		if nodes_stats.status_code > 399:
+			raise Exception()
+	except:
+		raise HTTPException(508, f"Error getting stats on {self.name}")
+	for node in nodes_stats.json()["systemDiagnostics"]["nodeSnapshots"]:
+		storage[node["address"].split(".")[-1]] = {
+			"content": node["snapshot"]["contentRepositoryStorageUsage"],
+			"Flowfile": node["snapshot"]["FlowfileRepositoryStorageUsage"]
+		}
+	return storage
+
+class NAAS(NiFi):
+	owner: constr(max_length=256) = None
+	america_url: constr(max_length=256) = None
