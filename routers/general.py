@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from ..sec.SepviceWOW import create_incident, Incident, get_incident
+from ..src.ServiceNOW import create_incident, Incident, get_incident
 from ..src.Archive import Archive
 from ..src.Alert import AlertScanner
 
