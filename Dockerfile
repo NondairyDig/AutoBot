@@ -1,7 +1,7 @@
-FROM python:3.10.12-mq
+FROM python:3.10.12
 COPY . /app/autobot
 WORKDIR /app
-COPY ./pip.conf /etc/pip.conf
+#COPY ./pip.conf /etc/pip.conf
 RUN pip install -r autobot/requirements.txt
 EXPOSE 8080
 RUN chmod -R 777 .

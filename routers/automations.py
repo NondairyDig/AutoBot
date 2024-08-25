@@ -1,16 +1,10 @@
 from fastapi import APIRouter, Request, WebSocket
 from ..src.Alert import Alert
-from .kafka import shortcuts as kafka_automations
-from .nifi import shortcuts as nifi_automations
-from .mq import shortcuts as mq_automations
 from ..utils.task_manager import task_manager
 from typing import Dict, Any
 
 
 router = APIRouter(prefix="/automations", tags=["Automations"])
-router.include_router(kafka_automations.router)
-router.include_router(nifi_automations.router)
-router.include_router(mq_automations.router)
 
 
 @router.get("/automation_arguments")
