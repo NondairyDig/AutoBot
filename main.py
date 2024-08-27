@@ -4,7 +4,7 @@ from .routers import automations as shortcuts
 from .utils import auth
 from urllib3 import disable_warnings
 from urllib3.exceptions import InsecureRequestWarning
-from . import automations # Important for automations to be able run
+from .automations import automations # Important for automations to be able run
 
 
 disable_warnings()

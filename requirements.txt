@@ -15,3 +15,6 @@ confluent-kafka
 elasticsearch
 pytz
 pandas
+lxml[html_clean]
+lxml_html_clean
+requests-html

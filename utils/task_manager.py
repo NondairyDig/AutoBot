@@ -2,7 +2,6 @@ import asyncio
 import inspect
 import logging
 from fastapi import HTTPException, WebSocket
-from fastapi.responses import RedirectResponse
 from celery import Celery
 from celery.result import AsyncResult
 from functools import wraps
