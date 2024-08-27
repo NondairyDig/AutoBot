@@ -7,16 +7,8 @@ from celery import Celery
 from celery.result import AsyncResult
 from functools import wraps
 from celery.utils.log import get_task_logger
-from .logging import ElasticsearchHandler
 from copy import copy
-from celery.schedules import crontab
 from typing import Any, Dict
-from ..src.Archive import ArchiveAlert
-from ..config import (
-    ELASTICSEARCH_URLS, ELASTICSEARCH_INDEX, CELERY_TASKS_TOPIC, 
-    KAFKA_TASKS_BOOTSTRAP_SERVERS, CELERY_TASKS_COLLECTION, CELERY_TASKS_CONNECTION_DETAILS, 
-    KAFKA_AUTOMATIONS_AUTH, DOMAIN_FQDN, AUTOMATIONS_ELASTIC_TRACK
-)
 
 
 class AutomationManager(Celery):
@@ -62,7 +54,8 @@ class AutomationManager(Celery):
     async def schedule_alert(self, automation_name, archive, **kwargs):
         await self.check_args(automation_name, kwargs)
         auto = await asyncio.to_thread(self.send_task, automation_name, args=[dict(archive) if archive else False], kwargs=kwargs)
-        return RedirectResponse(AUTOMATIONS_ELASTIC_TRACK.replace("<automation_id>", auto.id))
+        return auto.id
+
 
     async def check_args(self, task_name: str, args: dict) -> None:
         # Check if the task exists
@@ -93,34 +86,10 @@ class AutomationManager(Celery):
 
 task_manager = AutomationManager('task_manager')
 task_manager.conf.update(
-    task_serializer='json',
-    task_default_queue=CELERY_TASKS_TOPIC,
-    broker_url=f"confluentkafka://{','.join([f'{b.split(':')[0]}.{DOMAIN_FQDN}:{b.split(':')[1]}' for b in KAFKA_TASKS_BOOTSTRAP_SERVERS.split(',')])}",
-    broker_transport_options={
-        "kafka_common_config": {
-            "bootstrap.servers": ",".join([f"{b.split(':')[0]}.{DOMAIN_FQDN}:{b.split(':')[1]}" for b in KAFKA_TASKS_BOOTSTRAP_SERVERS.split(',')]),
-            "sasl.mechanism": 'SCRAM-SHA-256',
-            "security.protocol": "SASL_PLAINTEXT",
-            "sasl.username": KAFKA_AUTOMATIONS_AUTH['username'],
-            "sasl.password": KAFKA_AUTOMATIONS_AUTH['password'],
-            "client.id": KAFKA_AUTOMATIONS_AUTH['username'],
-            "group.id": KAFKA_AUTOMATIONS_AUTH['username']
-        }
-    },
-    result_backend=CELERY_TASKS_CONNECTION_DETAILS["string"],
-    result_backend_options={
-        "database": CELERY_TASKS_CONNECTION_DETAILS["database"],
-        "taskmeta_collection": CELERY_TASKS_COLLECTION
-    },
+    broker_url=f"redis://redis-autobot:6379/0",
     task_track_started=True,
     broker_connection_retry_on_startup=True
 )
-task_manager.conf.beat_schedule = {
-    "autofix_scan_alerts_5min": {
-        "task": "autofix_scan_alerts",
-        "schedule": crontab(minute="*/5")
-    }
-}
 
 
 def automation(total_steps: int = 1, description: str = "Automation", AutoFix: Any = False):
@@ -131,10 +100,6 @@ def automation(total_steps: int = 1, description: str = "Automation", AutoFix: A
             logger = get_task_logger(self.name)
             logger.setLevel(logging.INFO)
             logger.propagate = False
-
-            if not any(isinstance(handler, ElasticsearchHandler) for handler in logger.handlers):
-                handler = ElasticsearchHandler(ELASTICSEARCH_URLS, ELASTICSEARCH_INDEX)
-                logger.addHandler(handler)
             
             logger.info(f"Task {self.name} has Started", extra={"id": self.request.id, "automation_name": self.name, "progress": "0.00%", "state": "STARTED", "parameters": kwargs})
 
@@ -155,14 +120,6 @@ def automation(total_steps: int = 1, description: str = "Automation", AutoFix: A
                 logger.error(f"Task {self.name} has Failed: {str(e)}", extra={"id": self.request.id, "automation_name": self.name, "progress": "100.0%", "state": "FAILED", "parameters": kwargs})
                 raise e
             logger.info(f"Task {self.name} has Completed", extra={"id": self.request.id, "automation_name": self.name, "progress": "100.0%", "state": "SUCCESS", "parameters": kwargs})
-
-            try:
-                if args[0]:
-                    alert = ArchiveAlert(**args[0])
-                    alert.description = f"{res}"
-                    asyncio.run(alert.send_to_archive())
-            except Exception as e:
-                print(f"Failed to archive alert:{self.request.id}:{str(e)}:{args}")
             return res
         sig = inspect.signature(func)
         task_manager.task_registry[func.__name__] = {"arguments": {name: param.annotation if param.annotation is not inspect.Parameter.empty else None for name, param in sig.parameters.items()}, "description": description, "autofix": AutoFix}

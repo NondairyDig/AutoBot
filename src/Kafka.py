@@ -6,6 +6,7 @@ from .Zookeeper import Zookeeper
 from typing import List
 from ..config import VICTORIA_QUERY_METRICS_URL, REQUESTS_CLIENT, KAFKA_AUTH, REASSIGN_COMMAND
 from pydantic import BaseModel, constr
+import asyncio
 
 class Broker(Host):
 	id: constr(max_length=256) = None

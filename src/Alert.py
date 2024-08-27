@@ -2,7 +2,6 @@
 from pydantic import BaseModel, constr
 from ..utils.task_manager import task_manager
 from ..config import GRAFANA_URL, ALERTS_MANAGER_URL, GRAFANA_QUERY_URL, REQUESTS_CLIENT, GRAFANA_HEADERS, GRAFANA_ALERTS_QUERY
-from ..src.Archive import ArchiveAlert, archive
 import re
 import pandas as pd
 import asyncio
@@ -40,15 +39,7 @@ class Alert(BaseModel):
 			setattr(self, key, value)
 
 	async def automation_picker(self):
-		if "is getting full" in self.message:
-			queue_manager = self.node_name.split(':')[0]
-			arg1 = self.node_name.split(':')[1]
-			return {
-				"possible responsible teams": await Archive.get_responsible_team(await Archive.search(arg1, "Hurricane", True)),
-				"Grafana_URL": f"{GRAFANA_URL}/d/QUEUES-nO/wng-wat cher?orgid=18&var-environment=Al&var-networkeAll&var-regionsfvar-QuGR={queue_manager}&var-queue={arg1}&var-queve_regex="
-			}
-		else:
-			return await AutoFix.autofix(self)
+		return await AutoFix.autofix(self)
 
 
 class AutoFix(Alert):
@@ -74,13 +65,7 @@ class AutoFix(Alert):
 			autofix = cls(**vars(fix["autofix"]))
 			if await validate_conditions(vars(autofix.conditions)):
 				arguments = {arg: re.search(list(val.values())[0], getattr(alert, list(val.keys())[0])).group(1) for arg, val in autofix.args.items()}
-				if autofix.archive:
-					archive = ArchiveAlert()
-					archive.technology = alert.application
-					archive.actions_taken = automation
-					archive.cluster = str(list(arguments.values()))
-				else:
-					archive = False
+				archive = False
 				await alert.clear()
 				return await task_manager.schedule_alert(automation, archive, **arguments)
 		return "Couldn't find a fix for this alert"

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, constr
 from typing import List
 from .OCP import Pod, Cluster
-from ..config import REQUESTS_CLIENT, MIFI_AUTH, WIFI_DB, NAAS_DB, CLUSTER_MANAGER, OPENSHIFT_API_SCHEME, TIMEZONE
+from ..config import REQUESTS_CLIENT, NIFI_AUTH, NIFI_DB, NAAS_DB, CLUSTER_MANAGER, OPENSHIFT_API_SCHEME, TIMEZONE
 from fastapi.exceptions import HTTPException
 from datetime import datetime
 import re

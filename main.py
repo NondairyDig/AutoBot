@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
-from .routers import automations as shortcuts, statistics, general
+from .routers import automations as shortcuts
 from .utils import auth
 from urllib3 import disable_warnings
 from urllib3.exceptions import InsecureRequestWarning
-from .automations import automations # Important for automations to be able run
+from . import automations # Important for automations to be able run
 
 
 disable_warnings()
@@ -14,9 +14,7 @@ app = FastAPI(redoc_url=None, swagger_ui_parameters={
                                 "deepLinking": True
                                 })
 app.include_router(shortcuts.router)
-app.include_router(statistics.router)
 app.include_router(auth.router)
-app.include_router(general.router)
 
 
 @app.get('/', tags=["Main"])
