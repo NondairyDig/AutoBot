@@ -5,7 +5,7 @@ from email.mime.text import MIMEText
 from ..utils.task_manager import automation
 
 
-@automation(3, "check_ipad_stock", False)
+@automation(3, "check_ipad_stock", False, "*/5 * * * *")
 def check_ipad_stock():
     session = HTMLSession()
     URL = "https://www.apple.com/shop/refurbished/ipad/ipad-pro-12-9"

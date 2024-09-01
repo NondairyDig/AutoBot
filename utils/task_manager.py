@@ -8,6 +8,9 @@ from functools import wraps
 from celery.utils.log import get_task_logger
 from copy import copy
 from typing import Any, Dict
+from croniter import croniter
+from celery.schedules import crontab
+from datetime import datetime
 
 
 class AutomationManager(Celery):
@@ -91,7 +94,15 @@ task_manager.conf.update(
 )
 
 
-def automation(total_steps: int = 1, description: str = "Automation", AutoFix: Any = False):
+def is_valid_cron(cron_expression: str) -> bool:
+    try:
+        croniter(cron_expression, datetime.now())
+        return True
+    except (ValueError, KeyError):
+        return False
+
+
+def automation(total_steps: int = 1, description: str = "Automation", AutoFix: Any = False, schedule: Any = False):
     def decorator(func):
         @task_manager.task(bind=True, name=func.__name__, tags=[func.__module__])
         @wraps(func)
@@ -120,8 +131,12 @@ def automation(total_steps: int = 1, description: str = "Automation", AutoFix: A
                 raise e
             logger.info(f"Task {self.name} has Completed", extra={"id": self.request.id, "automation_name": self.name, "progress": "100.0%", "state": "SUCCESS", "parameters": kwargs})
             return res
+
         sig = inspect.signature(func)
-        task_manager.task_registry[func.__name__] = {"arguments": {name: param.annotation if param.annotation is not inspect.Parameter.empty else None for name, param in sig.parameters.items()}, "description": description, "autofix": AutoFix}
+        if is_valid_cron(schedule):
+            task_manager.conf.beat_schedule = {f"{func.__name__}_scheduled": {"task": func.__name__, "schedule": crontab(schedule)}}
+        else: schedule = False
+        task_manager.task_registry[func.__name__] = {"arguments": {name: param.annotation if param.annotation is not inspect.Parameter.empty else None for name, param in sig.parameters.items()}, "description": description, "autofix": AutoFix, "schedule": schedule}
         task_manager.task_registry[func.__name__]["arguments"].pop("self", None)
         return wrapper
     return decorator

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
-from .routers import automations as shortcuts
+from .routers import automations as automations_router
 from .utils import auth
 from urllib3 import disable_warnings
 from urllib3.exceptions import InsecureRequestWarning
@@ -13,13 +13,13 @@ app = FastAPI(redoc_url=None, swagger_ui_parameters={
                                 "tagsSorter": "alpha",
                                 "deepLinking": True
                                 })
-app.include_router(shortcuts.router)
+app.include_router(automations_router.router)
 app.include_router(auth.router)
 
 
 @app.get('/', tags=["Main"])
 async def index():
-    return FileResponse("AutoBot/assets/index.htnl")
+    return FileResponse("AutoBot/assets/index.html")
 
 @app.get("/assets/{file:path}", tags=["Main"])
 async def favicon(file):
