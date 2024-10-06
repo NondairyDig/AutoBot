@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi.responses import RedirectResponse, FileResponse
 from .routers import automations as automations_router
 from .utils import auth
 from urllib3 import disable_warnings
@@ -19,7 +19,7 @@ app.include_router(auth.router)
 
 @app.get('/', tags=["Main"])
 async def index():
-    return FileResponse("AutoBot/assets/index.html")
+    return RedirectResponse(url="/docs")
 
 @app.get("/assets/{file:path}", tags=["Main"])
 async def favicon(file):

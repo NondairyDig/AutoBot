@@ -28,7 +28,7 @@ class QMGR(Host):
 		if not self.ip:
 			self.dns_to_ip()
 
-	def get_qn_by_host(self):
+	def get_qm_by_host(self):
 		info = REQUESTS_CLIENT.get(VICTORIA_QUERY_METRICS_URL + f"wmq_qmgr_info{{host='{self.hostname}'}}").json()
 		self.qu = info['data']['result'][0]['metric']['queue_manager']
 
@@ -37,7 +37,7 @@ class QMGR(Host):
 			if self.pymqi_handler.is_connected:
 				return "Already Connected"
 		if not self.qm and self.hostname:
-			self.get_qn_by_host()
+			self.get_qm_by_host()
 		if not self.ip or not self.hostname:
 			self.get_connection_details()
 		if not self.ip or not self.listen_port:

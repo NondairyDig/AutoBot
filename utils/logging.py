@@ -21,10 +21,10 @@ class ElasticsearchHandler(logging.Handler):
 	def format(self, record):
 		return {
 			'message': record.getMessage(),
-			"level": record.levelname,
+			'level': record.levelname,
 			'@timestamp': int(time()),
 			'automation_id': getattr(record, 'id', None),
-			"name": getattr(record, 'automation_name', None),
+			'name': getattr(record, 'automation_name', None),
 			'progress': getattr(record, 'progress', None),
 			'parameters': getattr(record, 'parameters', None),
 			'state': getattr(record, 'state', None)
