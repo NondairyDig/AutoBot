@@ -30,7 +30,9 @@ class AutomationManager(Celery):
                 continue
             automations[task_name] = {
                 "description": self.task_registry[task_name]["description"],
-                "arguments": {k: str(v) for k, v in self.task_registry[task_name]["arguments"].items()}
+                "arguments": {k: str(v) for k, v in self.task_registry[task_name]["arguments"].items()},
+                "schedule": self.task_registry[task_name]["schedule"],
+                "autofix": self.task_registry[task_name]["autofix"]
             }
         return automations
 
@@ -106,7 +108,7 @@ def automation(total_steps: int = 1, description: str = "Automation", AutoFix: A
     def decorator(func):
         @task_manager.task(bind=True, name=func.__name__, tags=[func.__module__])
         @wraps(func)
-        def wrapper(self, *args, **kwargs):
+        def wrapper(self, **kwargs):
             logger = get_task_logger(self.name)
             logger.setLevel(logging.INFO)
             logger.propagate = False
@@ -132,10 +134,13 @@ def automation(total_steps: int = 1, description: str = "Automation", AutoFix: A
             logger.info(f"Task {self.name} has Completed", extra={"id": self.request.id, "automation_name": self.name, "progress": "100.0%", "state": "SUCCESS", "parameters": kwargs})
             return res
 
-        sig = inspect.signature(func)
+        nonlocal schedule
         if is_valid_cron(schedule):
             task_manager.conf.beat_schedule = {f"{func.__name__}_scheduled": {"task": func.__name__, "schedule": crontab(schedule)}}
-        else: schedule = False
+        else:
+            schedule = False
+            
+        sig = inspect.signature(func)
         task_manager.task_registry[func.__name__] = {"arguments": {name: param.annotation if param.annotation is not inspect.Parameter.empty else None for name, param in sig.parameters.items()}, "description": description, "autofix": AutoFix, "schedule": schedule}
         task_manager.task_registry[func.__name__]["arguments"].pop("self", None)
         return wrapper
